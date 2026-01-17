@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FiAlertTriangle, FiRefreshCw, FiHome } from 'react-icons/fi';
+import { FiAlertTriangle, FiRefreshCw, FiHome, FiCode, FiMail } from 'react-icons/fi';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -26,8 +26,33 @@ class ErrorBoundary extends React.Component {
       errorInfo: errorInfo
     });
 
-    // You can also log the error to an error reporting service here
-    // Example: logErrorToService(error, errorInfo);
+    // Enhanced error logging
+    this.logErrorToService(error, errorInfo);
+  }
+
+  logErrorToService = (error, errorInfo) => {
+    // Log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.group('🚨 Error Boundary Caught Error');
+      console.error('Error:', error);
+      console.error('Error Info:', errorInfo);
+      console.error('Component Stack:', errorInfo.componentStack);
+      console.groupEnd();
+    }
+
+    // In production, you would send this to an error reporting service
+    // Example: Sentry, LogRocket, Bugsnag, etc.
+    if (process.env.NODE_ENV === 'production') {
+      // Example: Sentry.captureException(error, { extra: errorInfo });
+      console.error('Production error logged:', {
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+    }
   }
 
   handleRetry = () => {

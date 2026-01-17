@@ -19,7 +19,7 @@ const Hero = () => {
     <section className="relative w-full h-screen mx-auto overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-black/90" />
-      
+
       {/* Animated Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse" />
@@ -30,7 +30,7 @@ const Hero = () => {
       {/* Main Content Container */}
       <div className="relative z-10 h-full max-w-7xl mx-auto px-6 sm:px-16 flex items-center justify-center">
         <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
-          
+
           {/* Left Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -62,22 +62,21 @@ const Hero = () => {
                   {previewData.displayName || "Developer"}
                 </span>
               </h1>
-              
+
               <div className="text-sm sm:text-base lg:text-lg text-white/80 font-medium">
                 {previewData.tagline || "Full Stack Developer & UI/UX Designer"}
               </div>
             </motion.div>
 
             {/* Description */}
-            {/* <motion.p
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
               className="text-base text-white/70 max-w-2xl leading-relaxed"
             >
-              I create exceptional digital experiences that combine cutting-edge technology with beautiful design. 
-              Passionate about building scalable solutions and bringing ideas to life.
-            </motion.p> */}
+              {previewData.overview || "I create exceptional digital experiences that combine cutting-edge technology with beautiful design. Passionate about building scalable solutions and bringing ideas to life."}
+            </motion.p>
 
             {/* CTA Buttons */}
             <motion.div
@@ -168,7 +167,7 @@ const Hero = () => {
           className="w-40 h-40 border border-white/10 rounded-full"
         />
       </div>
-      
+
       <div className="absolute bottom-20 left-20 hidden lg:block">
         <motion.div
           animate={{ rotate: -360 }}
@@ -185,7 +184,7 @@ const Hero = () => {
           className="w-6 h-6 border border-white/20 rounded-full"
         />
       </div>
-      
+
       <div className="absolute top-2/3 right-10 hidden xl:block">
         <motion.div
           animate={{ y: [0, 20, 0] }}

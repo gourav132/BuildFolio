@@ -1,12 +1,24 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { About, Contact, Experience, Feedbacks, Hero, Navbar, Tech, Works, StaticBackground, ProtectedRoute, ErrorBoundary } from './components';
-import { Portfolio, Login, Register, Reset, Customize, Preview, Landing, ControlCenter, Settings } from './Pages';
+import { Navbar, StaticBackground, ProtectedRoute, ErrorBoundary } from './components';
+import { Login, Register, Reset, Customize, Preview, Landing, ControlCenter, Settings, Portfolio } from './components/LazyComponents';
+import LazyPortfolio from './components/LazyPortfolio';
+import { LoadingProvider } from './context/LoadingContext';
+import { performanceUtils } from './utils/performance';
 
 function App() {
+  // Initialize performance monitoring
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      performanceUtils.monitorBundleSize();
+      performanceUtils.monitorWebVitals();
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <LoadingProvider>
+        <BrowserRouter>
         <Routes>
           {/* Landing Page - Entry Point (Public) */}
           <Route path="/" element={<Landing />} />
@@ -38,25 +50,7 @@ function App() {
           } />
 
           {/* Main Portfolio Route (Public) */}
-          <Route path="/portfolio" element={
-            <div className="relative z-0 bg-primary">
-              <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center">
-                <Navbar />
-                <Hero />
-              </div>
-              <div className="relative z-0">
-                <About />
-                <Experience />
-                <Tech />
-                <Works />
-                <Feedbacks />
-                <div className="relative z-0">
-                  <Contact />
-                  <StaticBackground />
-                </div>
-              </div>
-            </div>
-          } />
+          <Route path="/portfolio" element={<LazyPortfolio />} />
 
           {/* Protected Routes (Require Authentication) */}
           <Route path="/control-center" element={
@@ -83,7 +77,8 @@ function App() {
           {/* Dynamic Portfolio Route (Public) */}
           <Route path="/portfolio/:userId" element={<Portfolio />} />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </LoadingProvider>
     </ErrorBoundary>
   );
 }

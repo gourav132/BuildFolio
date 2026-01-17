@@ -4,7 +4,7 @@ import { styles } from "../styles";
 import { github } from "../assets";
 import { SectionWrapper } from "../hoc";
 import { fadeIn, textVariant } from "../utils/motion";
-import { ProjectContext } from "../context/ProjectContext";
+import { PreviewContext } from "../context/PreviewContext";
 import { FiGithub, FiExternalLink, FiEye, FiCode, FiStar } from "react-icons/fi";
 
 const ProjectCard = ({
@@ -36,11 +36,11 @@ const ProjectCard = ({
           }}
           transition={{ duration: 0.3 }}
         />
-        
+
         {/* Main Card */}
         <motion.div
           className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden h-full"
-          whileHover={{ 
+          whileHover={{
             y: -8,
             scale: 1.02,
           }}
@@ -53,7 +53,7 @@ const ProjectCard = ({
               alt={projectTitle}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
-            
+
             {/* Overlay */}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-3">
               {githubLink && (
@@ -68,7 +68,7 @@ const ProjectCard = ({
                   <FiGithub className="w-4 h-4 text-white" />
                 </motion.a>
               )}
-              
+
               {projectLink && (
                 <motion.a
                   href={projectLink}
@@ -100,7 +100,7 @@ const ProjectCard = ({
             <h3 className="text-white text-sm font-bold group-hover:text-purple-400 transition-colors duration-300">
               {projectTitle}
             </h3>
-            
+
             {/* Description */}
             <p className="text-white/70 text-xs leading-relaxed line-clamp-3">
               {projectDescription}
@@ -137,7 +137,7 @@ const ProjectCard = ({
                   <span>12</span>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-1 text-white/60 text-xs">
                 <FiEye className="w-3 h-3" />
                 <span>1.2k</span>
@@ -159,7 +159,7 @@ const ProjectCard = ({
 };
 
 const Works = () => {
-  const [projects, setProjects, PRloading] = useContext(ProjectContext);
+  const [previewData] = useContext(PreviewContext);
   const [filter, setFilter] = useState("all");
 
   const filters = [
@@ -170,13 +170,14 @@ const Works = () => {
     { id: "ui", label: "UI/UX" },
   ];
 
-  const filteredProjects = projects.projects || [];
+  const filteredProjects = previewData?.projects || [];
+  const PRloading = false; // Data already loaded in Portfolio.jsx
 
   return (
     <div className="relative">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
-      
+
       <div className="relative z-10">
         {/* Section Header */}
         <motion.div
@@ -191,7 +192,7 @@ const Works = () => {
           >
             My work
           </motion.p>
-          
+
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -200,7 +201,7 @@ const Works = () => {
           >
             Projects
           </motion.h2>
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -220,9 +221,9 @@ const Works = () => {
             transition={{ duration: 0.8 }}
             className="text-sm text-white/80 leading-relaxed text-center"
           >
-            Following projects showcases my skills and experience through real-world examples of my work. 
-            Each project is briefly described with links to code repositories and live demos. 
-            It reflects my ability to solve complex problems, work with different technologies, 
+            Following projects showcases my skills and experience through real-world examples of my work.
+            Each project is briefly described with links to code repositories and live demos.
+            It reflects my ability to solve complex problems, work with different technologies,
             and manage projects effectively.
           </motion.p>
         </motion.div>
@@ -238,11 +239,10 @@ const Works = () => {
             <button
               key={filterOption.id}
               onClick={() => setFilter(filterOption.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-xs ${
-                filter === filterOption.id
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-xs ${filter === filterOption.id
                   ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
                   : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20"
-              }`}
+                }`}
             >
               {filterOption.label}
             </button>
@@ -285,7 +285,7 @@ const Works = () => {
               Have a Project in Mind?
             </h3>
             <p className="text-white/70 mb-4 text-sm">
-              I'm always excited to work on new and challenging projects. 
+              I'm always excited to work on new and challenging projects.
               Let's discuss how we can bring your ideas to life!
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

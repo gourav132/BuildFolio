@@ -126,37 +126,37 @@ export default function Overview({ step, setStep }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="space-y-7"
+      className="space-y-6"
     >
       {/* Header */}
       <div className="text-center">
-        <div className="w-18 h-18 bg-gradient-to-r from-green-500 to-teal-500 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-2xl shadow-green-500/25">
-          <FiFileText className="w-9 h-9 text-white" />
+        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/25">
+          <FiFileText className="w-6 h-6 text-white" />
         </div>
-        <h3 className="text-2xl font-bold text-white mb-3">Overview</h3>
-        <p className="text-gray-400 text-base">Tell us about your background</p>
+        <h3 className="text-xl font-bold text-white mb-2">Overview</h3>
+        <p className="text-gray-400 text-sm">Tell us about your background</p>
       </div>
 
-      <form onSubmit={handleSubmit(handleContinue)} className="space-y-7">
+      <form onSubmit={handleSubmit(handleContinue)} className="space-y-5">
         {/* About Section */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
+          className="space-y-3"
         >
           <div>
-            <label className="block text-sm font-semibold text-gray-200 mb-3" htmlFor="overview">
+            <label className="block text-sm font-medium text-gray-200 mb-2" htmlFor="overview">
               About You <span className="text-red-400">*</span>
             </label>
             <textarea
               id="overview"
               placeholder="Write a compelling description about yourself, your background, and what drives you in your field..."
-              className={`w-full px-4 py-3.5 bg-white/5 border rounded-2xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 hover:border-white/20 resize-none ${
+              className={`w-full px-3 py-2.5 bg-gray-800/50 border rounded-lg text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 hover:border-gray-600 resize-none ${
                 errors.overview 
                   ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
-                  : 'border-white/10 focus:ring-green-500/50 focus:border-green-500/50'
+                  : 'border-gray-700 focus:ring-green-500/50 focus:border-green-500/50'
               }`}
-              rows={5}
+              rows={4}
               disabled={isSubmitting}
               {...register("overview", {
                 required: "About section is required",
@@ -180,7 +180,7 @@ export default function Overview({ step, setStep }) {
                 {errors.overview.message}
               </motion.p>
             ) : (
-              <p className="mt-3 text-xs text-gray-400 leading-relaxed">
+              <p className="mt-2 text-xs text-gray-400 leading-relaxed">
                 Share your story, passion, and what makes you unique in your field.
               </p>
             )}
@@ -192,13 +192,13 @@ export default function Overview({ step, setStep }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="space-y-4"
+          className="space-y-3"
         >
           <div>
-            <label className="block text-sm font-semibold text-gray-200 mb-4">
+            <label className="block text-sm font-medium text-gray-200 mb-3">
               Select Your Expertise <span className="text-red-400">*</span>
             </label>
-            <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
+            <div className="bg-gray-800/30 border border-gray-700 rounded-xl overflow-hidden">
               <ul className="grid grid-cols-1 gap-0">
                 {list("React Developer", "React")}
                 {list("Web Developer", "Web")}
@@ -217,8 +217,8 @@ export default function Overview({ step, setStep }) {
                 {errors.services.message}
               </motion.p>
             ) : (
-              <div className="flex items-center mt-4 text-xs text-gray-400">
-                <FiCode className="w-4 h-4 mr-2" />
+              <div className="flex items-center mt-3 text-xs text-gray-400">
+                <FiCode className="w-3 h-3 mr-2" />
                 <span>You can select up to 4 areas of expertise</span>
               </div>
             )}
@@ -226,40 +226,40 @@ export default function Overview({ step, setStep }) {
         </motion.div>
 
         {/* Quick Tips */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-7">
-          <div className="flex items-center mb-5">
-            <div className="w-9 h-9 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-green-500/25">
-              <FiCheck className="w-5 h-5 text-white" />
+        <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+          <div className="flex items-center mb-3">
+            <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center mr-3">
+              <FiCheck className="w-3 h-3 text-white" />
             </div>
-            <h4 className="text-base font-bold text-white">Writing Tips</h4>
+            <h4 className="text-sm font-semibold text-white">Writing Tips</h4>
           </div>
-          <ul className="text-sm text-gray-300 space-y-3">
+          <ul className="text-xs text-gray-300 space-y-2">
             <li className="flex items-start">
-              <span className="w-2 h-2 bg-green-400 rounded-full mt-2 mr-4 flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5 mr-3 flex-shrink-0"></span>
               <span>Keep your about section concise but engaging (2-3 paragraphs)</span>
             </li>
             <li className="flex items-start">
-              <span className="w-2 h-2 bg-green-400 rounded-full mt-2 mr-4 flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5 mr-3 flex-shrink-0"></span>
               <span>Highlight your unique value proposition and key achievements</span>
             </li>
             <li className="flex items-start">
-              <span className="w-2 h-2 bg-green-400 rounded-full mt-2 mr-4 flex-shrink-0"></span>
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5 mr-3 flex-shrink-0"></span>
               <span>Choose expertise areas that best represent your current skills</span>
             </li>
           </ul>
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between pt-7">
+        <div className="flex justify-between pt-4">
           <motion.button
             type="button"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setStep("intro")}
             disabled={isSubmitting}
-            className="flex items-center space-x-3 px-9 py-3.5 bg-white/10 text-gray-300 rounded-2xl hover:bg-white/20 transition-all duration-200 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center space-x-2 px-6 py-2.5 bg-gray-800/50 text-gray-300 rounded-lg hover:bg-gray-700/50 transition-all duration-200 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FiArrowLeft className="w-5 h-5" />
+            <FiArrowLeft className="w-4 h-4" />
             <span>Back</span>
           </motion.button>
           
@@ -268,10 +268,10 @@ export default function Overview({ step, setStep }) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             disabled={isSubmitting || !isValid}
-            className={`flex items-center space-x-3 px-9 py-3.5 rounded-2xl transition-all duration-200 font-bold text-sm shadow-2xl ${
+            className={`flex items-center space-x-2 px-6 py-2.5 rounded-lg transition-all duration-200 font-medium text-sm ${
               isSubmitting || !isValid
                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700 shadow-green-500/25'
+                : 'bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700'
             }`}
           >
             {isSubmitting ? (
@@ -282,7 +282,7 @@ export default function Overview({ step, setStep }) {
             ) : (
               <>
                 <span>Continue</span>
-                <FiArrowRight className="w-5 h-5" />
+                <FiArrowRight className="w-4 h-4" />
               </>
             )}
           </motion.button>

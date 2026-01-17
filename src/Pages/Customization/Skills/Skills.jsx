@@ -671,26 +671,26 @@ export default function Skills({ step, setStep }) {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <label htmlFor={name} className="block text-sm font-semibold text-gray-200 mb-3">
+        <label htmlFor={name} className="block text-sm font-medium text-gray-200 mb-2">
           {label}
           {validationRules.required && <span className="text-red-400 ml-1">*</span>}
         </label>
         <div className="relative">
           {Icon && (
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Icon className={`h-5 w-5 ${hasError ? 'text-red-400' : 'text-gray-400'}`} />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Icon className={`h-4 w-4 ${hasError ? 'text-red-400' : 'text-gray-400'}`} />
             </div>
           )}
           <input
             type="text"
             id={name}
             placeholder={placeholder}
-            className={`w-full px-4 py-3.5 bg-white/5 border rounded-2xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 hover:border-white/20 ${
-              Icon ? 'pl-12' : ''
+            className={`w-full px-3 py-2.5 bg-gray-800/50 border rounded-lg text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 hover:border-gray-600 ${
+              Icon ? 'pl-10' : ''
             } ${
               hasError 
                 ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
-                : 'border-white/10 focus:ring-blue-500/50 focus:border-blue-500/50'
+                : 'border-gray-700 focus:ring-blue-500/50 focus:border-blue-500/50'
             }`}
             {...register(name, validationRules)}
             disabled={isSubmitting}
@@ -706,7 +706,7 @@ export default function Skills({ step, setStep }) {
             {hasError.message}
           </motion.p>
         ) : helperText && (
-          <p className="mt-3 text-xs text-gray-400 leading-relaxed">{helperText}</p>
+          <p className="mt-2 text-xs text-gray-400 leading-relaxed">{helperText}</p>
         )}
       </motion.div>
     );
@@ -717,27 +717,27 @@ export default function Skills({ step, setStep }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="space-y-7"
+      className="space-y-6"
     >
       {/* Header */}
       <div className="text-center">
-        <div className="w-18 h-18 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-2xl shadow-blue-500/25">
-          <FiCode className="w-9 h-9 text-white" />
+        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/25">
+          <FiCode className="w-6 h-6 text-white" />
         </div>
-        <h3 className="text-2xl font-bold text-white mb-3">Skills & Technologies</h3>
-        <p className="text-gray-400 text-base">Showcase your technical expertise</p>
+        <h3 className="text-xl font-bold text-white mb-2">Skills & Technologies</h3>
+        <p className="text-gray-400 text-sm">Showcase your technical expertise</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Add/Edit Skill Form */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="space-y-6"
+          className="space-y-4"
         >
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h4 className="text-lg font-bold text-white mb-4 flex items-center">
-              <FiPlus className="w-5 h-5 mr-2" />
+          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <h4 className="text-base font-semibold text-white mb-3 flex items-center">
+              <FiPlus className="w-4 h-4 mr-2" />
               {skillState.mode === "add" ? "Add New Skill" : "Edit Skill"}
             </h4>
             
@@ -761,13 +761,13 @@ export default function Skills({ step, setStep }) {
                 }
               )}
 
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-200 mb-3">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-200 mb-2">
                   Skill Level <span className="text-red-400">*</span>
                 </label>
                 <select
                   {...register("skillLevel", { required: "Skill level is required" })}
-                  className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 hover:border-white/20"
+                  className="w-full px-3 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 hover:border-gray-600"
                   disabled={isSubmitting}
                 >
                   <option value="Beginner">Beginner</option>
@@ -777,16 +777,16 @@ export default function Skills({ step, setStep }) {
                 </select>
               </div>
 
-              <div className="flex space-x-3">
+              <div className="flex space-x-2">
                 <motion.button
                   type="submit"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={isSubmitting || !isValid}
-                  className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-2xl transition-all duration-200 font-semibold text-sm shadow-lg ${
+                  className={`flex-1 flex items-center justify-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm ${
                     isSubmitting || !isValid
                       ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/25'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
                   }`}
                 >
                   {isSubmitting ? (
@@ -811,7 +811,7 @@ export default function Skills({ step, setStep }) {
                       setSkillState({ mode: "add", editingSkillId: null });
                       reset();
                     }}
-                    className="px-4 py-3 bg-white/10 text-gray-300 rounded-2xl hover:bg-white/20 transition-all duration-200 font-semibold text-sm"
+                    className="px-3 py-2 bg-gray-800/50 text-gray-300 rounded-lg hover:bg-gray-700/50 transition-all duration-200 font-medium text-sm"
                   >
                     Cancel
                   </motion.button>
@@ -821,12 +821,12 @@ export default function Skills({ step, setStep }) {
           </div>
 
           {/* Quick Add Popular Skills */}
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <div className="flex items-center mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-green-500/25">
-                <FiPlus className="w-4 h-4 text-white" />
+          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <div className="flex items-center mb-3">
+              <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-2">
+                <FiPlus className="w-3 h-3 text-white" />
               </div>
-              <h4 className="text-base font-bold text-white">Quick Add Popular Skills</h4>
+              <h4 className="text-sm font-semibold text-white">Quick Add Popular Skills</h4>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {popularSkills.map((skill, index) => {
@@ -839,10 +839,10 @@ export default function Skills({ step, setStep }) {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => !isAdded && handleQuickAdd(skill)}
                     disabled={isAdded}
-                    className={`p-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+                    className={`p-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
                       isAdded
                         ? 'bg-green-500/20 text-green-300 border border-green-500/30 cursor-not-allowed'
-                        : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                        : 'bg-gray-700/50 text-gray-300 border border-gray-600 hover:bg-gray-600/50 hover:border-gray-500'
                     }`}
                   >
                     {renderSkillIcon(iconData, "w-3 h-3")}
@@ -854,24 +854,24 @@ export default function Skills({ step, setStep }) {
           </div>
 
           {/* Quick Tips */}
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <div className="flex items-center mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-blue-500/25">
-                <FiZap className="w-4 h-4 text-white" />
+          <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-4">
+            <div className="flex items-center mb-3">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mr-2">
+                <FiZap className="w-3 h-3 text-white" />
               </div>
-              <h4 className="text-base font-bold text-white">Tips</h4>
+              <h4 className="text-sm font-semibold text-white">Tips</h4>
             </div>
-            <ul className="text-sm text-gray-300 space-y-2">
+            <ul className="text-xs text-gray-300 space-y-2">
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 mr-3 flex-shrink-0"></span>
                 <span>Add skills that are relevant to your target role</span>
               </li>
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 mr-3 flex-shrink-0"></span>
                 <span>Be honest about your skill levels</span>
               </li>
               <li className="flex items-start">
-                <span className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 mr-3 flex-shrink-0"></span>
                 <span>Original colorful icons are automatically assigned</span>
               </li>
             </ul>
@@ -882,9 +882,9 @@ export default function Skills({ step, setStep }) {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="space-y-4"
+          className="space-y-3"
         >
-          <h4 className="text-lg font-bold text-white mb-4">Your Skills ({previewData.skills?.length || 0})</h4>
+          <h4 className="text-base font-semibold text-white mb-3">Your Skills ({previewData.skills?.length || 0})</h4>
           
           <AnimatePresence>
             {previewData.skills && previewData.skills.length > 0 ? (
@@ -897,42 +897,42 @@ export default function Skills({ step, setStep }) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-all duration-200"
+                      className="bg-gray-800/30 border border-gray-700 rounded-lg p-3 hover:bg-gray-700/30 transition-all duration-200"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div 
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg`}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center`}
                             style={{ 
                               backgroundColor: iconData.bgColor || '#3B82F620',
                               border: `1px solid ${iconData.color || '#3B82F6'}40`
                             }}
                           >
-                            {renderSkillIcon(iconData, "w-5 h-5")}
+                            {renderSkillIcon(iconData, "w-4 h-4")}
                           </div>
                           <div>
-                            <h5 className="font-semibold text-white text-sm">{skill.name}</h5>
+                            <h5 className="font-medium text-white text-sm">{skill.name}</h5>
                             <span className="text-xs text-gray-400">{skill.level}</span>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1">
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleEditSkill(skill)}
-                            className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-xl transition-all duration-200"
+                            className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-all duration-200"
                             title="Edit skill"
                           >
-                            <FiEdit3 className="w-4 h-4" />
+                            <FiEdit3 className="w-3 h-3" />
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleDeleteSkill(skill.id)}
-                            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-xl transition-all duration-200"
+                            className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-all duration-200"
                             title="Delete skill"
                           >
-                            <FiTrash2 className="w-4 h-4" />
+                            <FiTrash2 className="w-3 h-3" />
                           </motion.button>
                         </div>
                       </div>
@@ -944,9 +944,9 @@ export default function Skills({ step, setStep }) {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center"
+                className="bg-gray-800/30 border border-gray-700 rounded-lg p-6 text-center"
               >
-                <FiCode className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+                <FiCode className="w-8 h-8 text-gray-500 mx-auto mb-3" />
                 <p className="text-gray-400 text-sm">No skills added yet. Start by adding your first skill!</p>
               </motion.div>
             )}
@@ -955,16 +955,16 @@ export default function Skills({ step, setStep }) {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between pt-7">
+      <div className="flex justify-between pt-4">
         <motion.button
           type="button"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setStep("overview")}
           disabled={isSubmitting}
-          className="flex items-center space-x-3 px-9 py-3.5 bg-white/10 text-gray-300 rounded-2xl hover:bg-white/20 transition-all duration-200 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center space-x-2 px-6 py-2.5 bg-gray-800/50 text-gray-300 rounded-lg hover:bg-gray-700/50 transition-all duration-200 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FiArrowLeft className="w-5 h-5" />
+          <FiArrowLeft className="w-4 h-4" />
           <span>Back</span>
         </motion.button>
         
@@ -974,10 +974,10 @@ export default function Skills({ step, setStep }) {
           whileTap={{ scale: 0.98 }}
           onClick={handleContinue}
           disabled={isSubmitting}
-          className="flex items-center space-x-3 px-9 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-bold text-sm shadow-2xl shadow-blue-500/25"
+          className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium text-sm"
         >
           <span>Continue</span>
-          <FiArrowRight className="w-5 h-5" />
+          <FiArrowRight className="w-4 h-4" />
         </motion.button>
       </div>
     </motion.div>

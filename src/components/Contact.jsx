@@ -98,7 +98,7 @@ const Contact = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
       
       <div className="relative z-10">
-        <div className={`xl:mt-8 flex xl:flex-row flex-col-reverse gap-6 overflow-hidden`}>
+        <div className={`xl:mt-8 flex xl:flex-row flex-col-reverse gap-8 overflow-hidden`}>
           {/* Contact Form */}
           <motion.div
             variants={slideIn("left", "tween", 0.2, 1)}
@@ -109,7 +109,7 @@ const Contact = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="mb-6"
+              className="mb-8"
             >
               <p className="text-purple-400 font-semibold text-sm mb-2">Get in touch</p>
               <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4">Contact</h3>
@@ -121,9 +121,9 @@ const Contact = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-6"
+              className="mb-8"
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {contactInfo.map((info, index) => (
                   <motion.a
                     key={info.title}
@@ -131,15 +131,15 @@ const Contact = () => {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
-                    className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-3 hover:bg-white/10 transition-all duration-300"
+                    className="group bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-lg p-3 hover:bg-gray-700/40 hover:border-gray-600 transition-all duration-300"
                   >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <info.icon className="w-3 h-3 text-white" />
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-purple-500/20">
+                        <info.icon className="w-4 h-4 text-purple-400" />
                       </div>
-                      <div>
-                        <p className="text-white/60 text-xs font-medium">{info.title}</p>
-                        <p className="text-white text-xs font-medium">{info.value}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-gray-400 text-xs font-medium mb-1">{info.title}</p>
+                        <p className="text-white text-sm font-medium truncate">{info.value}</p>
                       </div>
                     </div>
                   </motion.a>
@@ -152,7 +152,7 @@ const Contact = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6"
+              className="bg-gray-800/30 backdrop-blur-sm border border-gray-700 rounded-xl p-5"
             >
               <form
                 ref={formRef}
@@ -160,8 +160,8 @@ const Contact = () => {
                 className="space-y-4"
               >
                 {/* Name Field */}
-                <div className="space-y-1">
-                  <label className="text-white font-medium text-xs">
+                <div className="space-y-2">
+                  <label className="text-white font-medium text-sm">
                     Your Name *
                   </label>
                   <input
@@ -171,13 +171,13 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     placeholder="What's your good name?"
-                    className="w-full bg-white/10 border border-white/20 rounded-md px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 transition-all duration-300 text-xs"
+                    className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 text-sm"
                   />
                 </div>
 
                 {/* Email Field */}
-                <div className="space-y-1">
-                  <label className="text-white font-medium text-xs">
+                <div className="space-y-2">
+                  <label className="text-white font-medium text-sm">
                     Your Email *
                   </label>
                   <input
@@ -187,13 +187,13 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     placeholder="What's your web address?"
-                    className="w-full bg-white/10 border border-white/20 rounded-md px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 transition-all duration-300 text-xs"
+                    className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 text-sm"
                   />
                 </div>
 
                 {/* Message Field */}
-                <div className="space-y-1">
-                  <label className="text-white font-medium text-xs">
+                <div className="space-y-2">
+                  <label className="text-white font-medium text-sm">
                     Your Message *
                   </label>
                   <textarea
@@ -203,7 +203,7 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     placeholder="What you want to say?"
-                    className="w-full bg-white/10 border border-white/20 rounded-md px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/20 transition-all duration-300 resize-none text-xs"
+                    className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300 resize-none text-sm"
                   />
                 </div>
 
@@ -213,16 +213,16 @@ const Contact = () => {
                   disabled={loading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-2 px-6 rounded-md hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-xs"
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium py-2.5 px-6 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm"
                 >
                   {loading ? (
                     <>
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       <span>Sending...</span>
                     </>
                   ) : (
                     <>
-                      <FiSend className="w-3 h-3" />
+                      <FiSend className="w-4 h-4" />
                       <span>Send Message</span>
                     </>
                   )}
@@ -233,10 +233,10 @@ const Contact = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center space-x-2 p-3 bg-green-500/20 border border-green-500/30 rounded-md"
+                    className="flex items-center space-x-2 p-3 bg-green-500/20 border border-green-500/30 rounded-lg"
                   >
-                    <FiCheck className="w-3 h-3 text-green-400" />
-                    <span className="text-green-400 font-medium text-xs">
+                    <FiCheck className="w-4 h-4 text-green-400" />
+                    <span className="text-green-400 font-medium text-sm">
                       Thank you! I will get back to you as soon as possible.
                     </span>
                   </motion.div>
@@ -246,10 +246,10 @@ const Contact = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center space-x-2 p-3 bg-red-500/20 border border-red-500/30 rounded-md"
+                    className="flex items-center space-x-2 p-3 bg-red-500/20 border border-red-500/30 rounded-lg"
                   >
-                    <FiAlertCircle className="w-3 h-3 text-red-400" />
-                    <span className="text-red-400 font-medium text-xs">
+                    <FiAlertCircle className="w-4 h-4 text-red-400" />
+                    <span className="text-red-400 font-medium text-sm">
                       Something went wrong. Please try again.
                     </span>
                   </motion.div>

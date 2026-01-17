@@ -6,8 +6,8 @@ import { PreviewContext } from '../../context/PreviewContext';
 import { logout } from '../../firebase/config';
 
 const ControlCenter = () => {
-  const [previewData, setPreviewData] = useContext(PreviewContext);
-  const [selectedDesign, setSelectedDesign] = useState('modern-dark');
+  const [previewData, setPreviewData, updateTemplateId] = useContext(PreviewContext);
+  const selectedDesign = previewData?.templateId || 'modern-dark';
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -31,14 +31,14 @@ const ControlCenter = () => {
       id: 'minimal-light',
       name: 'Minimal Light',
       description: 'Clean and minimal design',
-      status: 'coming-soon',
+      status: 'active',
       icon: FiGrid
     },
     {
       id: 'creative-gradient',
       name: 'Creative Gradient',
       description: 'Bold gradient design',
-      status: 'coming-soon',
+      status: 'active',
       icon: FiLayers
     }
   ];
@@ -96,8 +96,11 @@ const ControlCenter = () => {
   ];
 
   const handleDesignSelect = (designId) => {
-    setSelectedDesign(designId);
-    console.log('Selected design:', designId);
+    if (updateTemplateId) {
+      updateTemplateId(designId);
+    } else {
+      console.error("updateTemplateId is not defined in context");
+    }
   };
 
   return (
@@ -108,11 +111,12 @@ const ControlCenter = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(120,119,198,0.05),transparent_50%)]"></div>
       </div>
 
+
       {/* Header */}
       <header className="relative z-10 px-4 py-4 border-b border-gray-800/50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <Link 
+            <Link
               to="/portfolio"
               className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300 text-sm"
             >
@@ -120,7 +124,7 @@ const ControlCenter = () => {
               <span>Portfolio</span>
             </Link>
             <div className="w-px h-6 bg-gray-700"></div>
-            <Link 
+            <Link
               to="/"
               className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300 text-sm"
             >
@@ -177,11 +181,10 @@ const ControlCenter = () => {
               <motion.div
                 key={design.id}
                 whileHover={{ scale: 1.02 }}
-                className={`relative bg-gray-900/30 backdrop-blur-sm border rounded-lg p-4 cursor-pointer transition-all duration-300 ${
-                  selectedDesign === design.id 
-                    ? 'border-purple-500 bg-purple-500/10' 
-                    : 'border-gray-800/50 hover:border-gray-700'
-                }`}
+                className={`relative bg-gray-900/30 backdrop-blur-sm border rounded-lg p-4 cursor-pointer transition-all duration-300 ${selectedDesign === design.id
+                  ? 'border-purple-500 bg-purple-500/10'
+                  : 'border-gray-800/50 hover:border-gray-700'
+                  }`}
                 onClick={() => handleDesignSelect(design.id)}
               >
                 {design.status === 'active' && (
@@ -232,7 +235,7 @@ const ControlCenter = () => {
                 transition={{ duration: 0.6, delay: 0.3 + index * 0.1 }}
                 className="group"
               >
-                <Link 
+                <Link
                   to={section.route}
                   className="block bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-lg p-4 hover:bg-gray-800/30 hover:border-gray-700 transition-all duration-300"
                 >
@@ -277,7 +280,7 @@ const ControlCenter = () => {
           </div>
         </motion.div>
       </div>
-    </div>
+    </div >
   );
 };
 

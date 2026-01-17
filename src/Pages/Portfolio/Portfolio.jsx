@@ -1,22 +1,15 @@
-import React, { useEffect, useState, useContext } from "react";
-import {
-  About,
-  Contact,
-  Experience,
-  Feedbacks,
-  Hero,
-  Navbar,
-  Tech,
-  Works,
-  StaticBackground,
-} from "../../components";
-import { logout, auth, db } from "../../firebase/config";
-
+import React, { useEffect, useState, useContext, Suspense } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate, useParams } from "react-router-dom";
 import ReactLoading from "react-loading";
 import { PreviewContext } from "../../context/PreviewContext";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+
+// Import Templates
+// Lazy loading would be ideal here too, but for now we import directly to ensure availability
+import ModernDark from "../../features/portfolio/templates/ModernDark/ModernDark";
+import MinimalLight from "../../features/portfolio/templates/MinimalLight/MinimalLight";
+import CreativeGradient from "../../features/portfolio/templates/CreativeGradient/CreativeGradient";
 
 export default function Portfolio() {
   const [previewData, setPreviewData] = useContext(PreviewContext);
@@ -34,16 +27,29 @@ export default function Portfolio() {
         (doc) => doc.data().userName === userId
       );
       if (userDoc) {
-        const doc = userDoc.data();
-        setPreviewData(doc.previewData);
+        const userData = userDoc.data();
+        let projects = [];
+
+        // Fetch projects for this user
+        if (userData.uid) {
+          const projectsRef = collection(firestore, "projects");
+          const q = query(projectsRef, where("userID", "==", userData.uid));
+          const querySnapshot = await getDocs(q);
+          projects = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        }
+
+        setPreviewData({
+          ...userData.previewData,
+          projects: projects
+        });
         setLoading(false);
       } else {
         console.error("No user found");
         // Handle the case where the document is not found
+        // Maybe navigate to 404
       }
     } catch (error) {
       console.error("Error finding user", error);
-      // Handle errors appropriately
     }
   }
 
@@ -51,33 +57,31 @@ export default function Portfolio() {
     getUserDetails();
   }, [userId]);
 
+  // Decide which template to render
+  const renderTemplate = () => {
+    const templateId = previewData?.templateId || 'modern-dark';
+
+    switch (templateId) {
+      case 'minimal-light':
+        return <MinimalLight />;
+      case 'creative-gradient':
+        return <CreativeGradient />;
+      case 'modern-dark':
+      default:
+        return <ModernDark />;
+    }
+  };
+
   return (
-    <div className="w-8/12 m-auto">
+    <div className="w-full">
       {loading ? (
-        <>
-          <div className="login">
-            <ReactLoading type="bubbles" height={"60px"} width={"60px"} />
-          </div>
-        </>
+        <div className="h-screen w-full flex items-center justify-center bg-black">
+          <ReactLoading type="bubbles" height={"60px"} width={"60px"} color="#804dee" />
+        </div>
       ) : (
-        <>
-          <div style={{ zoom: "64%" }} className="relative z-0 bg-primary">
-            <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center">
-              <Navbar />
-              <Hero />
-            </div>
-            <About />
-            <Experience />
-            <Tech />
-            <Works />
-            {/* <Feedbacks /> */}
-            <div className="relative z-0">
-              <Contact />
-              <StaticBackground />
-            </div>
-          </div>
-        </>
+        renderTemplate()
       )}
     </div>
   );
 }
+
