@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { styles } from "@styles";
 import { services as defaultServices } from "@constants";
 import { SectionWrapper } from "@hoc";
 import { fadeIn, textVariant } from "@utils/motion";
@@ -223,4 +222,5 @@ const About = () => {
   );
 };
 
-export default SectionWrapper(About, "about");
+const WrappedAbout = SectionWrapper(About, "about");
+export default WrappedAbout;

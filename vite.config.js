@@ -25,44 +25,17 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks
+          // Vendor-only chunks — safe because they don't cross-import each other
           'react-vendor': ['react', 'react-dom'],
           'router-vendor': ['react-router-dom'],
           'supabase-vendor': ['@supabase/supabase-js'],
           'ui-vendor': ['framer-motion', 'react-icons'],
           'form-vendor': ['react-hook-form'],
-
-          // Feature chunks
-          'auth': [
-            './src/Pages/Login/Login.jsx',
-            './src/Pages/Register/Register.jsx',
-            './src/Pages/Reset/Reset.jsx'
-          ],
-          'customization': [
-            './src/Pages/Customization/Customize.jsx',
-            './src/Pages/Customization/Introduction/Introduction.jsx',
-            './src/Pages/Customization/Overview/Overview.jsx',
-            './src/Pages/Customization/Skills/Skills.jsx',
-            './src/Pages/Customization/Experience Field/Experience.jsx',
-            './src/Pages/Customization/Project/Project.jsx'
-          ],
-          'portfolio': [
-            './src/Pages/Portfolio/Portfolio.jsx',
-            './src/Pages/Portfolio-Preview/Preview.jsx'
-          ],
-          'components': [
-            './src/components/portfolio/Hero.jsx',
-            './src/components/portfolio/About.jsx',
-            './src/components/portfolio/Experience.jsx',
-            './src/components/portfolio/Tech.jsx',
-            './src/components/portfolio/Works.jsx',
-            './src/components/portfolio/Contact.jsx'
-          ]
         }
       }
     },
     chunkSizeWarningLimit: 1000,
-    sourcemap: false,
+    sourcemap: true,
     minify: 'terser',
     terserOptions: {
       compress: {
