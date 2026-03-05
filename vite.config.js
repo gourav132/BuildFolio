@@ -28,7 +28,7 @@ export default defineConfig({
           // Vendor chunks
           'react-vendor': ['react', 'react-dom'],
           'router-vendor': ['react-router-dom'],
-          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+          'supabase-vendor': ['@supabase/supabase-js'],
           'ui-vendor': ['framer-motion', 'react-icons'],
           'form-vendor': ['react-hook-form'],
 
