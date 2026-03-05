@@ -1,533 +1,287 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { PreviewContext } from "../../../context/PreviewContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FiPlus, 
-  FiTrash2, 
-  FiEdit3, 
-  FiSave, 
-  FiArrowLeft, 
-  FiArrowRight,
+import { supabase } from "../../../Supabase/supabaseClient";
+import ReactLoading from "react-loading";
+import {
   FiBriefcase,
+  FiPlus,
+  FiTrash2,
+  FiSave,
+  FiZap,
   FiCalendar,
   FiMapPin,
-  FiLink,
-  FiCheck,
-  FiZap,
-  FiAlertCircle
+  FiEdit2,
+  FiChevronRight
 } from "react-icons/fi";
+import { FormField, StepHeader, InfoHint } from "../components";
 
 export default function Experience({ step, setStep }) {
-  const [previewData, setPreviewData] = useContext(PreviewContext);
+  const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isValid },
-    watch,
+    formState: { errors },
     setValue,
     reset,
-    trigger
+    watch
   } = useForm({
-    mode: "onChange",
-    defaultValues: {
-      title: "",
-      company_name: "",
-      icon: "",
-      from: "",
-      to: "",
-      points: ""
-    }
+    defaultValues: { title: "", company_name: "", start_date: "", end_date: "", points: "" }
   });
 
-  const [expState, setExpState] = useState({
-    currentWorkingExp: Math.floor(Math.random() * 90) + 10,
-    mode: "add",
-  });
+  useEffect(() => {
+    fetchExperiences();
+  }, []);
 
-  // Watch form values
-  const watchedValues = watch();
-
-  const handleOverviewDelete = (title) => {
-    const filteredExperiences = previewData.experiences.filter(
-      (exp) => exp.id !== title
-    );
-    setPreviewData({ ...previewData, experiences: filteredExperiences });
-  };
-
-  const handleAddExperience = async (data) => {
+  const fetchExperiences = async () => {
+    setLoading(true);
     try {
-      const isValid = await trigger();
-      if (!isValid) return;
+      const { data, error } = await supabase
+        .from("experiences")
+        .select("*")
+        .order("display_order", { ascending: true })
+        .order("start_date", { ascending: false });
 
-      const splitPoints = data.points.split(".").filter(point => point.trim());
-      const date = data.from + " - " + data.to;
-
-      const exp = {
-        id: expState.currentWorkingExp,
-        title: data.title,
-        company_name: data.company_name,
-        icon: data.icon,
-        iconBg: "#383E56",
-        date: date,
-        points: splitPoints,
-      };
-
-      setPreviewData({
-        ...previewData,
-        experiences: previewData.experiences.concat(exp),
-      });
-      
-      setExpState({ ...expState, mode: "add" });
-      reset();
+      if (error) throw error;
+      setExperiences(data || []);
     } catch (error) {
-      console.error("Error adding experience:", error);
+      console.error("Error fetching experiences:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteExperience = (id) => {
-    const filteredExperiences = previewData.experiences.filter(
-      (exp) => exp.id !== id
-    );
-    setPreviewData({ ...previewData, experiences: filteredExperiences });
-  };
-
-  const handleUpdate = async (id) => {
+  const onSubmit = async (data) => {
+    setIsSaving(true);
     try {
-      const isValid = await trigger();
-      if (!isValid) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
 
-      const data = watchedValues;
-      let filteredExperiences = previewData.experiences.filter(
-        (exp) => exp.id !== id
-      );
+      const splitPoints = data.points
+        .split(".")
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
 
-      const splitPoints = data.points.split(".").filter(point => point.trim());
-      const date = data.from + " - " + data.to;
-
-      const exp = {
-        id: expState.currentWorkingExp,
+      const expData = {
+        profile_id: user.id,
         title: data.title,
         company_name: data.company_name,
-        icon: data.icon,
-        iconBg: "#383E56",
-        date: date,
-        points: splitPoints,
+        start_date: data.start_date,
+        end_date: data.end_date || null,
+        description_points: splitPoints,
+        display_order: experiences.length
       };
 
-      filteredExperiences.push(exp);
-      setPreviewData({ ...previewData, experiences: filteredExperiences });
-      setExpState({ ...expState, mode: "add" });
+      if (editingId) {
+        const { error } = await supabase
+          .from("experiences")
+          .update(expData)
+          .eq("id", editingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("experiences")
+          .insert([expData]);
+        if (error) throw error;
+      }
+
       reset();
+      setEditingId(null);
+      fetchExperiences();
     } catch (error) {
-      console.error("Error updating experience:", error);
+      console.error("Error saving experience:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleSearchExp = (id) => {
-    const exp = previewData.experiences.find((exp) => exp.id === id);
-    const points = exp.points.join(". ");
-    const duration = exp.date.split("-");
-    
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this milestone?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("experiences")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setExperiences(experiences.filter(e => e.id !== id));
+    } catch (error) {
+      console.error("Error deleting experience:", error);
+    }
+  };
+
+  const handleEdit = (exp) => {
+    setEditingId(exp.id);
     setValue("title", exp.title);
     setValue("company_name", exp.company_name);
-    setValue("icon", exp.icon);
-    setValue("to", duration[2]?.trim() + "-" + duration[3]?.trim() || "");
-    setValue("from", duration[0]?.trim() + "-" + duration[1]?.trim() || "");
-    setValue("points", points);
-    
-    setExpState({
-      currentWorkingExp: id,
-      mode: "update",
-    });
+    setValue("start_date", exp.start_date);
+    setValue("end_date", exp.end_date || "");
+    setValue("points", exp.description_points.join(". "));
   };
 
-  const handleContinue = async () => {
-    const isValid = await trigger();
-    if (isValid) {
-      setStep("project");
-    }
-  };
-
-  const input = (label, name, helperText = "", type = "text", icon = null, validationRules = {}) => {
-    const Icon = icon;
-    const hasError = errors[name];
-    
+  if (loading) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
-      >
-        <label htmlFor={name} className="block text-sm font-semibold text-gray-200 mb-3">
-          {label}
-          {validationRules.required && <span className="text-red-400 ml-1">*</span>}
-        </label>
-        <div className="relative">
-          {Icon && (
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Icon className={`h-5 w-5 ${hasError ? 'text-red-400' : 'text-gray-400'}`} />
-            </div>
-          )}
-          <input
-            type={type}
-            id={name}
-            placeholder={helperText}
-            className={`w-full px-4 py-4 bg-white/5 border rounded-2xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 hover:border-white/20 ${
-              Icon ? 'pl-12' : ''
-            } ${
-              hasError 
-                ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
-                : 'border-white/10 focus:ring-purple-500/50 focus:border-purple-500/50'
-            }`}
-            {...register(name, validationRules)}
-            disabled={isSubmitting}
-          />
-        </div>
-        {hasError ? (
-          <motion.p
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-2 text-xs text-red-400 flex items-center"
-          >
-            <FiAlertCircle className="w-3 h-3 mr-1" />
-            {hasError.message}
-          </motion.p>
-        ) : helperText && (
-          <p className="mt-3 text-xs text-gray-400 leading-relaxed">{helperText}</p>
-        )}
-      </motion.div>
+      <div className="h-full flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
     );
-  };
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="space-y-8"
-    >
-      {/* Header */}
-      <div className="text-center">
-        <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-purple-500/25">
-          <FiBriefcase className="w-10 h-10 text-white" />
-        </div>
-        <h3 className="text-3xl font-bold text-white mb-3">Work Experience</h3>
-        <p className="text-gray-400 text-lg">Add your professional experience and achievements</p>
-      </div>
+    <div className="space-y-8 pb-12">
+      <StepHeader
+        title="Experience"
+        description="Your professional trajectory"
+        icon={FiBriefcase}
+        colorClass="from-purple-500 to-blue-600"
+      />
 
-      {/* Experience Tabs */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
-      >
-        <div className="flex items-center justify-center">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              setExpState({ ...expState, mode: "add" });
-              reset();
-            }}
-            className="flex items-center space-x-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-2xl text-sm font-bold hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-lg shadow-purple-500/25"
-          >
-            <FiPlus className="w-4 h-4" />
-            <span>Add New Experience</span>
-          </motion.button>
-        </div>
-        
-        {/* Experience List */}
-        <div className="flex flex-wrap justify-center gap-3">
-          <AnimatePresence>
-            {previewData.experiences &&
-              previewData.experiences.map((exp, index) => (
-                <motion.button
-                  key={exp.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleSearchExp(exp.id)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 ${
-                    expState.currentWorkingExp === exp.id
-                      ? 'bg-purple-500/20 border-2 border-purple-500/30 text-purple-300'
-                      : 'bg-white/5 border-2 border-white/10 text-gray-300 hover:bg-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <FiBriefcase className="w-4 h-4" />
-                  <span className="truncate max-w-32">{exp.company_name}</span>
-                </motion.button>
-              ))}
-          </AnimatePresence>
-        </div>
-      </motion.div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Left Column: Form */}
+        <div className="space-y-6">
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">
+            {editingId ? "Refine Milestone" : "Log New Milestone"}
+          </h3>
 
-      {/* Form */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white/5 border border-white/10 rounded-3xl p-8"
-      >
-        <form onSubmit={handleSubmit(expState.mode === "add" ? handleAddExperience : handleUpdate)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {input(
-              "Company Name", 
-              "company_name", 
-              "Enter company name", 
-              "text", 
-              FiMapPin,
-              {
-                required: "Company name is required",
-                minLength: {
-                  value: 2,
-                  message: "Company name must be at least 2 characters"
-                },
-                maxLength: {
-                  value: 50,
-                  message: "Company name must be less than 50 characters"
-                }
-              }
-            )}
-            {input(
-              "Position", 
-              "title", 
-              "Your job title", 
-              "text", 
-              FiBriefcase,
-              {
-                required: "Position is required",
-                minLength: {
-                  value: 2,
-                  message: "Position must be at least 2 characters"
-                },
-                maxLength: {
-                  value: 50,
-                  message: "Position must be less than 50 characters"
-                }
-              }
-            )}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="bg-[#0d0d0e] border border-white/[0.08] p-8 rounded-3xl space-y-8 shadow-2xl relative overflow-hidden">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  label="Role / Capacity"
+                  placeholder="e.g. Senior Frontend Engineer"
+                  icon={FiBriefcase}
+                  {...register("title", { required: true })}
+                />
+                <FormField
+                  label="Organization"
+                  placeholder="e.g. Stripe, SpaceX"
+                  icon={FiMapPin}
+                  {...register("company_name", { required: true })}
+                />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {input(
-              "From", 
-              "from", 
-              "MM-YYYY", 
-              "month", 
-              FiCalendar,
-              {
-                required: "Start date is required"
-              }
-            )}
-            {input(
-              "To", 
-              "to", 
-              "MM-YYYY", 
-              "month", 
-              FiCalendar,
-              {
-                required: "End date is required"
-              }
-            )}
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  label="Entry Date"
+                  type="date"
+                  icon={FiCalendar}
+                  {...register("start_date", { required: true })}
+                />
+                <FormField
+                  label="Exit Date"
+                  type="date"
+                  icon={FiCalendar}
+                  helperText="Leave empty for 'Present'"
+                  {...register("end_date")}
+                />
+              </div>
 
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-200 mb-3">
-              Company Logo URL
-            </label>
-            <div className="relative">
-              <FiLink className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none h-5 w-5 text-gray-400" />
-              <input
-                type="url"
-                placeholder="https://company-logo-url.com"
-                className={`w-full px-4 py-4 pl-12 bg-white/5 border rounded-2xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 hover:border-white/20 ${
-                  errors.icon 
-                    ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
-                    : 'border-white/10 focus:ring-purple-500/50 focus:border-purple-500/50'
-                }`}
-                {...register("icon", {
-                  pattern: {
-                    value: /^https?:\/\/.+/,
-                    message: "Please enter a valid URL starting with http:// or https://"
-                  }
-                })}
-                disabled={isSubmitting}
+              <FormField
+                label="Key Impact & Responsibilities"
+                type="textarea"
+                placeholder="Architected the design system. Reduced bundle size by 40%."
+                helperText="Summarize your impact. Separate points with periods (.)"
+                {...register("points", { required: true })}
               />
             </div>
-            {errors.icon && (
-              <motion.p
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-xs text-red-400 flex items-center"
-              >
-                <FiAlertCircle className="w-3 h-3 mr-1" />
-                {errors.icon.message}
-              </motion.p>
-            )}
-          </div>
 
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-200 mb-3">
-              Experience Details <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              className={`w-full px-4 py-4 bg-white/5 border rounded-2xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 hover:border-white/20 resize-none ${
-                errors.points 
-                  ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
-                  : 'border-white/10 focus:ring-purple-500/50 focus:border-purple-500/50'
-              }`}
-              rows={5}
-              placeholder="Describe your responsibilities and achievements. Use periods to separate different points."
-              disabled={isSubmitting}
-              {...register("points", {
-                required: "Experience details are required",
-                minLength: {
-                  value: 20,
-                  message: "Experience details must be at least 20 characters"
-                },
-                maxLength: {
-                  value: 1000,
-                  message: "Experience details must be less than 1000 characters"
-                }
-              })}
-            />
-            {errors.points ? (
-              <motion.p
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-xs text-red-400 flex items-center"
-              >
-                <FiAlertCircle className="w-3 h-3 mr-1" />
-                {errors.points.message}
-              </motion.p>
-            ) : (
-              <p className="mt-3 text-xs text-gray-400 leading-relaxed">
-                Separate different points with periods (.)
-              </p>
-            )}
-          </div>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 py-3.5 rounded-xl text-[12px] font-bold text-white hover:scale-[1.01] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-500/10"
+            >
+              {isSaving ? (
+                <>
+                  <ReactLoading type="spin" height={16} width={16} color="#fff" />
+                  <span>Recording History...</span>
+                </>
+              ) : (
+                <>
+                  <FiSave size={14} />
+                  <span>{editingId ? "Update Trajectory" : "Commit to Timeline"}</span>
+                </>
+              )}
+            </button>
+          </form>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-center space-x-4">
-            {expState.mode === "add" ? (
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isSubmitting || !isValid}
-                className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-200 font-bold text-sm shadow-lg ${
-                  isSubmitting || !isValid
-                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-green-500/25'
-                }`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <FiSave className="w-4 h-4" />
-                    <span>Save Experience</span>
-                  </>
-                )}
-              </motion.button>
-            ) : (
-              <>
-                <motion.button
-                  type="submit"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  disabled={isSubmitting || !isValid}
-                  className={`flex items-center space-x-3 px-8 py-4 rounded-2xl transition-all duration-200 font-bold text-sm shadow-lg ${
-                    isSubmitting || !isValid
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-green-500/25'
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Updating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FiCheck className="w-4 h-4" />
-                      <span>Update</span>
-                    </>
-                  )}
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handleDeleteExperience(expState.currentWorkingExp)}
-                  disabled={isSubmitting}
-                  className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-2xl hover:from-red-600 hover:to-pink-600 transition-all duration-200 font-bold text-sm shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <FiTrash2 className="w-4 h-4" />
-                  <span>Delete</span>
-                </motion.button>
-              </>
-            )}
-          </div>
-        </form>
-      </motion.div>
-
-      {/* Quick Tips */}
-      <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-        <div className="flex items-center mb-6">
-          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-purple-500/25">
-            <FiZap className="w-5 h-5 text-white" />
-          </div>
-          <h4 className="text-lg font-bold text-white">Experience Tips</h4>
+          <InfoHint icon={FiZap}>
+            Focus on quantifiable achievements. Use action-oriented language to define your impact.
+          </InfoHint>
         </div>
-        <ul className="text-sm text-gray-300 space-y-3">
-          <li className="flex items-start">
-            <span className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-4 flex-shrink-0"></span>
-            <span>Focus on quantifiable achievements and specific responsibilities</span>
-          </li>
-          <li className="flex items-start">
-            <span className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-4 flex-shrink-0"></span>
-            <span>Use action verbs to describe your contributions and impact</span>
-          </li>
-          <li className="flex items-start">
-            <span className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-4 flex-shrink-0"></span>
-            <span>Include relevant technologies, tools, and methodologies used</span>
-          </li>
-        </ul>
+
+        {/* Right Column: List */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Career Hub</h3>
+            <button
+              onClick={() => { setEditingId(null); reset(); }}
+              className="flex items-center gap-2 text-[11px] font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-wider"
+            >
+              <FiPlus size={14} />
+              New Milestone
+            </button>
+          </div>
+
+          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+            <AnimatePresence mode="popLayout">
+              {experiences.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-white/5 rounded-2xl">
+                  <FiBriefcase className="mx-auto mb-3 text-gray-600" size={24} />
+                  <p className="text-[12px] text-gray-500">No professional milestones logged yet.</p>
+                </div>
+              ) : (
+                experiences.map(exp => (
+                  <motion.div
+                    key={exp.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className={`p-5 rounded-2xl border transition-all ${editingId === exp.id ? 'bg-purple-500/10 border-purple-500/30' : 'bg-white/[0.02] border-white/5 hover:border-white/10'}`}
+                  >
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center shrink-0">
+                        <FiBriefcase size={16} className="text-purple-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h5 className="text-[14px] font-bold text-white tracking-tight">{exp.title}</h5>
+                            <p className="text-[11px] font-medium text-gray-400 flex items-center gap-1.5 mt-0.5">
+                              {exp.company_name} • <span className="text-purple-400/80">{exp.start_date} - {exp.end_date || "Present"}</span>
+                            </p>
+                          </div>
+                          <div className="flex gap-1">
+                            <button onClick={() => handleEdit(exp)} className="p-1.5 text-gray-500 hover:text-purple-400 transition-colors"><FiEdit2 size={12} /></button>
+                            <button onClick={() => handleDelete(exp.id)} className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"><FiTrash2 size={12} /></button>
+                          </div>
+                        </div>
+                        <ul className="mt-3 space-y-1.5">
+                          {exp.description_points.slice(0, 2).map((p, idx) => (
+                            <li key={idx} className="text-[11px] text-gray-500 leading-relaxed flex gap-2">
+                              <span className="text-purple-500/50 mt-1">•</span>
+                              {p}
+                            </li>
+                          ))}
+                          {exp.description_points.length > 2 && (
+                            <li className="text-[10px] text-gray-600 italic pl-3">+{exp.description_points.length - 2} more points...</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex justify-between pt-8">
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setStep("overview")}
-          disabled={isSubmitting}
-          className="flex items-center space-x-3 px-10 py-4 bg-white/10 text-gray-300 rounded-2xl hover:bg-white/20 transition-all duration-200 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <FiArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </motion.button>
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleContinue}
-          disabled={isSubmitting}
-          className="flex items-center space-x-3 px-10 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 font-bold text-sm shadow-2xl shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span>Continue</span>
-          <FiArrowRight className="w-5 h-5" />
-        </motion.button>
-      </div>
-    </motion.div>
+      {/* Optional: Add StepNavigation back if needed, but following the Project.jsx pattern for now */}
+    </div>
   );
 }
+

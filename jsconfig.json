@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "src/*"
+            ],
+            "@components/*": [
+                "src/components/*"
+            ],
+            "@pages/*": [
+                "src/Pages/*"
+            ],
+            "@features/*": [
+                "src/features/*"
+            ],
+            "@templates/*": [
+                "src/features/portfolio/templates/*"
+            ],
+            "@assets/*": [
+                "src/assets/*"
+            ],
+            "@hoc": [
+                "src/hoc"
+            ],
+            "@hooks/*": [
+                "src/hooks/*"
+            ],
+            "@utils/*": [
+                "src/utils/*"
+            ],
+            "@styles": [
+                "src/styles.js"
+            ],
+            "@constants/*": [
+                "src/constants/*"
+            ]
+        }
+    },
+    "include": [
+        "src"
+    ]
+}

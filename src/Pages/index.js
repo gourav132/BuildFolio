@@ -8,4 +8,14 @@ import Landing from "./Landing/Landing";
 import ControlCenter from "./ControlCenter/ControlCenter";
 import Settings from "./Settings/Settings";
 
-export { Portfolio, Login, Register, Reset, Customize, Preview, Landing, ControlCenter, Settings };
+export {
+    Portfolio,
+    Login,
+    Register,
+    Reset,
+    Customize,
+    Preview,
+    Landing,
+    ControlCenter,
+    Settings
+};

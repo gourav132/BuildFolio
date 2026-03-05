@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
-import { auth, db } from "../../firebase/config";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { getFirestore, collection, getDocs, updateDoc, doc, setDoc } from "firebase/firestore";
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
-import ReactLoading from "react-loading";
 import { motion, AnimatePresence } from "framer-motion";
 import { PreviewContext } from "../../context/PreviewContext";
+import { supabase } from "../../Supabase/supabaseClient";
+import { useSupabaseAuth } from "../../hooks/useSupabaseAuth";
 
 import {
   FiUser, FiMail, FiPhone, FiMapPin, FiGlobe, FiGithub, FiLinkedin, FiTwitter,
@@ -15,8 +12,7 @@ import {
 } from "react-icons/fi";
 
 export default function Settings() {
-  const [previewData, setPreviewData] = useContext(PreviewContext);
-  const [user, loading] = useAuthState(auth);
+  const [user, loading] = useSupabaseAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -30,7 +26,7 @@ export default function Settings() {
 
   // Social Media Links
   const [socialLinks, setSocialLinks] = useState({
-    github: "", linkedin: "", twitter: "", instagram: "", 
+    github: "", linkedin: "", twitter: "", instagram: "",
     facebook: "", youtube: "", dribbble: ""
   });
 
@@ -58,62 +54,59 @@ export default function Settings() {
 
   const loadUserSettings = async () => {
     try {
-      const firestore = getFirestore();
-      const userCollection = collection(firestore, "users");
-      const snapshot = await getDocs(userCollection);
-      const userDoc = snapshot.docs.find((doc) => doc.data().uid === user.uid);
-      
-      if (userDoc) {
-        const userData = userDoc.data();
-        if (userData.contactInfo) setContactInfo(userData.contactInfo);
-        if (userData.socialLinks) setSocialLinks(userData.socialLinks);
-        if (userData.accountSettings) setAccountSettings(userData.accountSettings);
+      if (!user) return;
+
+      const { data: rows } = await supabase
+        .from('social_links')
+        .select('platform, url')
+        .eq('profile_id', user.id);
+
+      if (rows) {
+        const loaded = {};
+        rows.forEach(r => { loaded[r.platform] = r.url; });
+        setSocialLinks(prev => ({ ...prev, ...loaded }));
       }
     } catch (error) {
-      console.error("Error loading user settings:", error);
-      showErrorMessage("Failed to load settings");
+      console.error('Error loading social links:', error);
     }
   };
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
-      const firestore = getFirestore();
-      const userCollection = collection(firestore, "users");
-      const snapshot = await getDocs(userCollection);
-      const userDoc = snapshot.docs.find((doc) => doc.data().uid === user.uid);
-      
-      if (userDoc) {
-        const userRef = userDoc.ref;
-        await updateDoc(userRef, {
-          contactInfo, socialLinks, accountSettings, updatedAt: new Date()
-        });
+      if (!user) throw new Error('Not authenticated');
 
-        // Update preview data
-        const updatedPreviewData = {
-          ...previewData,
-          contact: {
-            ...previewData.contact,
-            email: contactInfo.email,
-            phone: contactInfo.phone,
-            address: contactInfo.location,
-            website: contactInfo.website
-          },
-          socials: socialLinks
-        };
-        setPreviewData(updatedPreviewData);
-        showSuccessMessage("Settings saved successfully!");
-      } else {
-        const userRef = doc(firestore, "users", user.uid);
-        await setDoc(userRef, {
-          uid: user.uid, contactInfo, socialLinks, accountSettings,
-          createdAt: new Date(), updatedAt: new Date()
-        });
-        showSuccessMessage("Settings saved successfully!");
+      // Upsert each social link platform (insert or update on conflict)
+      const platforms = Object.keys(socialLinks);
+      const upserts = platforms
+        .filter(p => socialLinks[p]?.trim()) // only rows with a URL
+        .map(platform => ({
+          profile_id: user.id,
+          platform,
+          url: socialLinks[platform].trim()
+        }));
+
+      if (upserts.length > 0) {
+        const { error } = await supabase
+          .from('social_links')
+          .upsert(upserts, { onConflict: 'profile_id,platform' });
+        if (error) throw error;
       }
+
+      // Delete cleared entries
+      const cleared = platforms.filter(p => !socialLinks[p]?.trim());
+      for (const platform of cleared) {
+        await supabase
+          .from('social_links')
+          .delete()
+          .eq('profile_id', user.id)
+          .eq('platform', platform);
+      }
+
+      showSuccessMessage('Settings saved successfully!');
     } catch (error) {
-      console.error("Error saving settings:", error);
-      showErrorMessage("Failed to save settings");
+      console.error('Error saving settings:', error);
+      showErrorMessage('Failed to save settings');
     } finally {
       setIsSaving(false);
     }
@@ -131,19 +124,18 @@ export default function Settings() {
 
     setIsSaving(true);
     try {
-      const credential = EmailAuthProvider.credential(user.email, passwordData.currentPassword);
-      await reauthenticateWithCredential(user, credential);
-      await updatePassword(user, passwordData.newPassword);
-      
+      // With Supabase, you can directly update the password of the active logged in session
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (error) throw error;
+
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       showSuccessMessage("Password changed successfully!");
     } catch (error) {
       console.error("Error changing password:", error);
-      if (error.code === "auth/wrong-password") {
-        showErrorMessage("Current password is incorrect");
-      } else {
-        showErrorMessage("Failed to change password");
-      }
+      showErrorMessage("Failed to change password: " + error.message);
     } finally {
       setIsSaving(false);
     }
@@ -151,7 +143,7 @@ export default function Settings() {
 
   const handleLogout = async () => {
     try {
-      await auth.signOut();
+      await supabase.auth.signOut();
       navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
@@ -179,375 +171,300 @@ export default function Settings() {
     { key: "dribbble", label: "Dribbble", icon: FiDribbble, color: "hover:text-pink-500" }
   ];
 
+  const sections = [
+    { id: 'contact', label: 'Contact Info', icon: FiUser },
+    { id: 'social', label: 'Social Links', icon: FiGlobe },
+    { id: 'password', label: 'Password', icon: FiLock },
+    { id: 'account', label: 'Account', icon: FiShield },
+    { id: 'danger', label: 'Danger Zone', icon: FiTrash2 },
+  ];
+  const [activeSection, setActiveSection] = useState('contact');
+
+  const inputClass = "w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/60 focus:bg-white/8 transition-all duration-200";
+  const labelClass = "block text-xs font-medium text-gray-500 uppercase tracking-widest mb-2";
+
   if (loading) {
     return (
-      <div className="min-h-screen w-8/12 m-auto bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-purple-500/25">
-            <FiSettings className="w-6 h-6 text-white animate-spin" />
-          </div>
-          <p className="text-gray-400 text-xs">Loading settings...</p>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-2 border-purple-500/30 border-t-purple-500 animate-spin" />
+          <p className="text-gray-600 text-xs tracking-widest uppercase">Loading</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-10/12 m-auto bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white relative overflow-hidden">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(120,119,198,0.05),transparent_50%)]"></div>
+    <div className="min-h-screen bg-[#080808] text-white">
+      {/* Subtle background */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,rgba(120,80,200,0.06),transparent_60%)] pointer-events-none" />
 
+      {/* Toast notifications */}
       <AnimatePresence>
         {showSuccess && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-xs"
+            initial={{ opacity: 0, y: -16, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.95 }}
+            className="fixed top-6 right-6 z-50 flex items-center gap-2.5 bg-[#111] border border-green-500/30 text-green-400 text-sm px-4 py-3 rounded-xl shadow-xl shadow-black/50"
           >
-            <FiCheck className="w-3 h-3" />
-            <span>Settings saved!</span>
+            <FiCheck className="w-4 h-4 flex-shrink-0" />
+            Settings saved
           </motion.div>
         )}
         {showError && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 z-50 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-xs"
+            initial={{ opacity: 0, y: -16, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.95 }}
+            className="fixed top-6 right-6 z-50 flex items-center gap-2.5 bg-[#111] border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-xl shadow-xl shadow-black/50"
           >
-            <FiX className="w-3 h-3" />
-            <span>{errorMessage}</span>
+            <FiX className="w-4 h-4 flex-shrink-0" />
+            {errorMessage}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 bg-black/20 backdrop-blur-sm border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <FiSettings className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm font-semibold text-white">Settings</span>
-            </div>
+      <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
 
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={handleSaveSettings}
-                disabled={isSaving}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 disabled:opacity-50"
-                title="Save Settings"
-              >
-                {isSaving ? (
-                  <ReactLoading type="spin" height="12px" width="12px" color="#8b5cf6" />
-                ) : (
-                  <FiSave className="w-3 h-3" />
-                )}
-              </button>
-              <button
-                onClick={() => navigate("/control-center")}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                title="Home"
-              >
-                <FiHome className="w-3 h-3" />
-              </button>
-              <button
-                onClick={handleLogout}
-                className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-all duration-200"
-                title="Logout"
-              >
-                <FiLogOut className="w-3 h-3" />
-              </button>
-            </div>
+        {/* Page header */}
+        <div className="flex items-center justify-between mb-12">
+          <div>
+            <p className="text-xs text-gray-600 uppercase tracking-[0.3em] mb-2">Account</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight">Settings</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/control-center')}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-800 text-gray-400 text-sm rounded-xl hover:border-gray-700 hover:text-white transition-all duration-200"
+            >
+              <FiHome className="w-3.5 h-3.5" /> Dashboard
+            </button>
+            <button
+              onClick={handleSaveSettings}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-2 bg-purple-600 text-white text-sm font-medium rounded-xl hover:bg-purple-500 transition-all duration-200 disabled:opacity-50"
+            >
+              <FiSave className="w-3.5 h-3.5" />
+              {isSaving ? 'Saving…' : 'Save Changes'}
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto p-6">
-        <div className="space-y-6">
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 p-4"
-          >
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                <FiUser className="w-3 h-3 text-white" />
-              </div>
-              <h2 className="text-sm font-semibold text-white">Contact Information</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Email</label>
-                <div className="relative">
-                  <FiMail className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500" />
-                  <input
-                    type="email"
-                    value={contactInfo.email}
-                    onChange={(e) => setContactInfo({...contactInfo, email: e.target.value})}
-                    className="w-full pl-8 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                    placeholder="your@email.com"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Phone</label>
-                <div className="relative">
-                  <FiPhone className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500" />
-                  <input
-                    type="tel"
-                    value={contactInfo.phone}
-                    onChange={(e) => setContactInfo({...contactInfo, phone: e.target.value})}
-                    className="w-full pl-8 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                    placeholder="+1 234 567 8900"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Location</label>
-                <div className="relative">
-                  <FiMapPin className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500" />
-                  <input
-                    type="text"
-                    value={contactInfo.location}
-                    onChange={(e) => setContactInfo({...contactInfo, location: e.target.value})}
-                    className="w-full pl-8 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                    placeholder="City, Country"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Website</label>
-                <div className="relative">
-                  <FiGlobe className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500" />
-                  <input
-                    type="url"
-                    value={contactInfo.website}
-                    onChange={(e) => setContactInfo({...contactInfo, website: e.target.value})}
-                    className="w-full pl-8 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                    placeholder="https://yourwebsite.com"
-                  />
-                </div>
-              </div>
-            </div>
-          </motion.div>
+        {/* Two-column layout */}
+        <div className="flex gap-8 items-start">
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 p-4"
-          >
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <FiGlobe className="w-3 h-3 text-white" />
+          {/* Sticky sidebar navigation */}
+          <aside className="w-52 flex-shrink-0 sticky top-10">
+            <nav className="flex flex-col gap-1">
+              {sections.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveSection(id)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all duration-200 text-left ${activeSection === id
+                    ? 'bg-white/8 text-white font-medium border border-white/10'
+                    : 'text-gray-500 hover:text-gray-300 hover:bg-white/4'
+                    }`}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {label}
+                </button>
+              ))}
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-red-500/80 hover:text-red-400 hover:bg-red-500/5 transition-all duration-200 w-full text-left"
+                >
+                  <FiLogOut className="w-4 h-4 flex-shrink-0" />
+                  Log out
+                </button>
               </div>
-              <h2 className="text-sm font-semibold text-white">Social Media Links</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {socialPlatforms.map((platform) => {
-                const Icon = platform.icon;
-                return (
-                  <div key={platform.key}>
-                    <label className="block text-xs text-gray-400 mb-1">{platform.label}</label>
-                    <div className="relative">
-                      <Icon className={`absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500 ${platform.color}`} />
-                      <input
-                        type="url"
-                        value={socialLinks[platform.key]}
-                        onChange={(e) => setSocialLinks({...socialLinks, [platform.key]: e.target.value})}
-                        className="w-full pl-8 pr-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                        placeholder={`https://${platform.key}.com/username`}
-                      />
+            </nav>
+          </aside>
+
+          {/* Content area */}
+          <div className="flex-1 min-w-0 space-y-6">
+
+            {/* Contact Information */}
+            {activeSection === 'contact' && (
+              <motion.div
+                key="contact"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white/[0.03] border border-gray-800 rounded-2xl p-8"
+              >
+                <h2 className="text-lg font-semibold text-white mb-1">Contact Information</h2>
+                <p className="text-sm text-gray-600 mb-8">How people can reach you.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                    { label: 'Email', key: 'email', icon: FiMail, type: 'email', placeholder: 'you@example.com' },
+                    { label: 'Phone', key: 'phone', icon: FiPhone, type: 'tel', placeholder: '+1 234 567 8900' },
+                    { label: 'Location', key: 'location', icon: FiMapPin, type: 'text', placeholder: 'City, Country' },
+                    { label: 'Website', key: 'website', icon: FiGlobe, type: 'url', placeholder: 'https://yoursite.com' },
+                  ].map(({ label, key, icon: Icon, type, placeholder }) => (
+                    <div key={key}>
+                      <label className={labelClass}>{label}</label>
+                      <div className="relative">
+                        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                        <input
+                          type={type}
+                          value={contactInfo[key]}
+                          onChange={(e) => setContactInfo({ ...contactInfo, [key]: e.target.value })}
+                          className={inputClass}
+                          placeholder={placeholder}
+                        />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 p-4"
-          >
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-6 h-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
-                <FiLock className="w-3 h-3 text-white" />
-              </div>
-              <h2 className="text-sm font-semibold text-white">Change Password</h2>
-            </div>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Current Password</label>
-                <div className="relative">
-                  <FiLock className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500" />
-                  <input
-                    type={showPasswords.current ? "text" : "password"}
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                    className="w-full pl-8 pr-8 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                    placeholder="Enter current password"
-                  />
+            {/* Social Links */}
+            {activeSection === 'social' && (
+              <motion.div
+                key="social"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white/[0.03] border border-gray-800 rounded-2xl p-8"
+              >
+                <h2 className="text-lg font-semibold text-white mb-1">Social Media</h2>
+                <p className="text-sm text-gray-600 mb-8">Links displayed on your portfolio.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {socialPlatforms.map(({ key, label, icon: Icon }) => (
+                    <div key={key}>
+                      <label className={labelClass}>{label}</label>
+                      <div className="relative">
+                        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                        <input
+                          type="url"
+                          value={socialLinks[key]}
+                          onChange={(e) => setSocialLinks({ ...socialLinks, [key]: e.target.value })}
+                          className={inputClass}
+                          placeholder={`https://${key}.com/username`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Password */}
+            {activeSection === 'password' && (
+              <motion.div
+                key="password"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white/[0.03] border border-gray-800 rounded-2xl p-8"
+              >
+                <h2 className="text-lg font-semibold text-white mb-1">Change Password</h2>
+                <p className="text-sm text-gray-600 mb-8">Update your account password.</p>
+                <div className="space-y-6 max-w-md">
+                  {[
+                    { label: 'Current Password', key: 'currentPassword', showKey: 'current' },
+                    { label: 'New Password', key: 'newPassword', showKey: 'new' },
+                    { label: 'Confirm New Password', key: 'confirmPassword', showKey: 'confirm' },
+                  ].map(({ label, key, showKey }) => (
+                    <div key={key}>
+                      <label className={labelClass}>{label}</label>
+                      <div className="relative">
+                        <FiLock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+                        <input
+                          type={showPasswords[showKey] ? 'text' : 'password'}
+                          value={passwordData[key]}
+                          onChange={(e) => setPasswordData({ ...passwordData, [key]: e.target.value })}
+                          className={inputClass + ' pr-12'}
+                          placeholder="••••••••"
+                        />
+                        <button
+                          onClick={() => setShowPasswords({ ...showPasswords, [showKey]: !showPasswords[showKey] })}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-400 transition-colors"
+                        >
+                          {showPasswords[showKey] ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                   <button
-                    onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white"
+                    onClick={handlePasswordChange}
+                    disabled={isSaving || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                    className="px-6 py-3 bg-white text-black text-sm font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {showPasswords.current ? <FiEyeOff className="w-3 h-3" /> : <FiEye className="w-3 h-3" />}
+                    {isSaving ? 'Updating…' : 'Update Password'}
                   </button>
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">New Password</label>
-                  <div className="relative">
-                    <FiLock className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500" />
-                    <input
-                      type={showPasswords.new ? "text" : "password"}
-                      value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                      className="w-full pl-8 pr-8 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                      placeholder="Enter new password"
-                    />
-                    <button
-                      onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white"
-                    >
-                      {showPasswords.new ? <FiEyeOff className="w-3 h-3" /> : <FiEye className="w-3 h-3" />}
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Confirm New Password</label>
-                  <div className="relative">
-                    <FiLock className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-500" />
-                    <input
-                      type={showPasswords.confirm ? "text" : "password"}
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                      className="w-full pl-8 pr-8 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                      placeholder="Confirm new password"
-                    />
-                    <button
-                      onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-white"
-                    >
-                      {showPasswords.confirm ? <FiEyeOff className="w-3 h-3" /> : <FiEye className="w-3 h-3" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <button
-                onClick={handlePasswordChange}
-                disabled={isSaving || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-                className="w-full md:w-auto px-4 py-1.5 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg hover:from-red-700 hover:to-orange-700 transition-all duration-200 font-medium text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+              </motion.div>
+            )}
+
+            {/* Account Settings */}
+            {activeSection === 'account' && (
+              <motion.div
+                key="account"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white/[0.03] border border-gray-800 rounded-2xl p-8"
               >
-                {isSaving ? "Changing..." : "Change Password"}
-              </button>
-            </div>
-          </motion.div>
+                <h2 className="text-lg font-semibold text-white mb-1">Preferences</h2>
+                <p className="text-sm text-gray-600 mb-8">Manage your account behaviour.</p>
+                <div className="space-y-2">
+                  {[
+                    { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive updates and alerts to your inbox', icon: FiBell },
+                    { key: 'portfolioPublic', label: 'Public Portfolio', description: 'Allow anyone with the link to view your portfolio', icon: FiGlobe },
+                    { key: 'autoSave', label: 'Auto Save', description: 'Automatically save changes as you edit', icon: FiSave },
+                  ].map(({ key, label, description, icon: Icon }) => (
+                    <div
+                      key={key}
+                      onClick={() => setAccountSettings({ ...accountSettings, [key]: !accountSettings[key] })}
+                      className="flex items-center justify-between p-5 rounded-xl border border-white/6 hover:border-white/10 hover:bg-white/[0.02] transition-all duration-200 cursor-pointer group"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-9 h-9 bg-white/5 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-white/8 transition-colors">
+                          <Icon className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white">{label}</p>
+                          <p className="text-xs text-gray-600 mt-0.5">{description}</p>
+                        </div>
+                      </div>
+                      {/* Toggle */}
+                      <div className={`relative w-11 h-6 rounded-full transition-all duration-300 flex-shrink-0 ${accountSettings[key] ? 'bg-purple-600' : 'bg-gray-800'}`}>
+                        <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${accountSettings[key] ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 p-4"
-          >
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                <FiShield className="w-3 h-3 text-white" />
-              </div>
-              <h2 className="text-sm font-semibold text-white">Account Settings</h2>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <FiBell className="w-3 h-3 text-gray-400" />
-                  <span className="text-xs text-gray-300">Email Notifications</span>
+            {/* Danger Zone */}
+            {activeSection === 'danger' && (
+              <motion.div
+                key="danger"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="border border-red-900/30 rounded-2xl p-8"
+              >
+                <h2 className="text-lg font-semibold text-red-300 mb-1">Danger Zone</h2>
+                <p className="text-sm text-red-900/80 mb-8">These actions are permanent and cannot be undone.</p>
+                <div className="flex items-center justify-between p-5 rounded-xl border border-red-900/30 bg-red-950/20">
+                  <div>
+                    <p className="text-sm font-semibold text-red-300">Delete Account</p>
+                    <p className="text-xs text-red-500/60 mt-0.5">Permanently remove your account and all associated data.</p>
+                  </div>
+                  <button className="px-5 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-500 transition-all duration-200">
+                    Delete Account
+                  </button>
                 </div>
-                <button
-                  onClick={() => setAccountSettings({...accountSettings, emailNotifications: !accountSettings.emailNotifications})}
-                  className={`w-8 h-4 rounded-full transition-all duration-200 ${
-                    accountSettings.emailNotifications ? 'bg-purple-500' : 'bg-gray-600'
-                  }`}
-                >
-                  <div className={`w-3 h-3 bg-white rounded-full transition-all duration-200 ${
-                    accountSettings.emailNotifications ? 'translate-x-4' : 'translate-x-0.5'
-                  }`}></div>
-                </button>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <FiGlobe className="w-3 h-3 text-gray-400" />
-                  <span className="text-xs text-gray-300">Public Portfolio</span>
-                </div>
-                <button
-                  onClick={() => setAccountSettings({...accountSettings, portfolioPublic: !accountSettings.portfolioPublic})}
-                  className={`w-8 h-4 rounded-full transition-all duration-200 ${
-                    accountSettings.portfolioPublic ? 'bg-purple-500' : 'bg-gray-600'
-                  }`}
-                >
-                  <div className={`w-3 h-3 bg-white rounded-full transition-all duration-200 ${
-                    accountSettings.portfolioPublic ? 'translate-x-4' : 'translate-x-0.5'
-                  }`}></div>
-                </button>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <FiSave className="w-3 h-3 text-gray-400" />
-                  <span className="text-xs text-gray-300">Auto Save</span>
-                </div>
-                <button
-                  onClick={() => setAccountSettings({...accountSettings, autoSave: !accountSettings.autoSave})}
-                  className={`w-8 h-4 rounded-full transition-all duration-200 ${
-                    accountSettings.autoSave ? 'bg-purple-500' : 'bg-gray-600'
-                  }`}
-                >
-                  <div className={`w-3 h-3 bg-white rounded-full transition-all duration-200 ${
-                    accountSettings.autoSave ? 'translate-x-4' : 'translate-x-0.5'
-                  }`}></div>
-                </button>
-              </div>
-            </div>
-          </motion.div>
+              </motion.div>
+            )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-red-500/10 backdrop-blur-sm rounded-xl border border-red-500/20 p-4"
-          >
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-6 h-6 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <FiTrash2 className="w-3 h-3 text-white" />
-              </div>
-              <h2 className="text-sm font-semibold text-red-300">Danger Zone</h2>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-red-200 font-medium">Delete Account</p>
-                <p className="text-xs text-red-300/70">Permanently delete your account and all data</p>
-              </div>
-              <button className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-medium text-xs">
-                Delete Account
-              </button>
-            </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

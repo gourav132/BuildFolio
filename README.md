@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src="public/logo.svg" alt="Logo" width="80" height="80">
+  <!-- <img src="public/logo.svg" alt="Logo" width="80" height="80"> -->
 
   <h3 align="center">BuildFolio</h3>
 
@@ -10,7 +10,7 @@
     <a href="https://github.com/yourusername/buildfolio"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="#">View Demo</a>
+    <!-- <a href="#">View Demo</a> -->
     ·
     <a href="https://github.com/yourusername/buildfolio/issues">Report Bug</a>
     ·
@@ -100,3 +100,4 @@ Contributions are what make the open source community such an amazing place to l
 ## 📝 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+  

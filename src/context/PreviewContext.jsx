@@ -1,12 +1,11 @@
 import React, { createContext, useEffect, useState } from "react";
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, db } from '../firebase/config';
-import { getFirestore, collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { supabase } from "../Supabase/supabaseClient";
+import { useSupabaseAuth } from "../hooks/useSupabaseAuth";
 
 export const PreviewContext = createContext();
 
 export const PreviewProvider = (props) => {
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading, error] = useSupabaseAuth();
   const [previewData, setPreviewData] = useState({
     displayName: "",
     tagline: "",
@@ -19,20 +18,19 @@ export const PreviewProvider = (props) => {
 
   async function handleUserData() {
     try {
-      const firestore = getFirestore();
-      const userCollection = collection(firestore, "users");
+      // 1. Fetching from Supabase (Sole Source of Truth)
+      const { data: profile, error: supabaseError } = await supabase
+        .from("profiles")
+        .select("*")
+        .single();
 
-      const snapshot = await getDocs(userCollection);
-      const userDoc = snapshot.docs.find((doc) => doc.data().uid === user.uid);
-      if (userDoc) {
-        if (userDoc.data().previewData) {
-          setPreviewData({
-            ...userDoc.data().previewData,
-            templateId: userDoc.data().previewData.templateId || "modern-dark"
-          });
-        }
-      } else {
-        console.error("Document with the given UID not found.");
+      if (profile) {
+        setPreviewData(prev => ({
+          ...prev,
+          displayName: profile.full_name || prev.displayName,
+          tagline: profile.tagline || prev.tagline,
+          templateId: profile.template_id || profile.portfolio_config?.templateId || "modern-dark"
+        }));
       }
     } catch (error) {
       console.error("Error fetching preview data:", error);
@@ -40,33 +38,27 @@ export const PreviewProvider = (props) => {
   }
 
   const updateTemplateId = async (newTemplateId) => {
+    // Standardize IDs (e.g., handle bento_box typo)
+    const sanitizedId = newTemplateId === 'bento_box' ? 'bento-box' : newTemplateId;
+
     // Optimistic update
-    setPreviewData(prev => ({ ...prev, templateId: newTemplateId }));
+    setPreviewData(prev => ({ ...prev, templateId: sanitizedId }));
 
-    if (user) {
-      try {
-        // We need to find the user document ID first since it might not be the UID
-        // In a better schema, user.uid would be the doc ID, but here we search
-        const firestore = getFirestore();
-        const userCollection = collection(firestore, "users");
-        const snapshot = await getDocs(userCollection);
-        const userDoc = snapshot.docs.find((doc) => doc.data().uid === user.uid);
-
-        if (userDoc) {
-          const userRef = doc(db, "users", userDoc.id);
-          await updateDoc(userRef, {
-            "previewData.templateId": newTemplateId
-          });
-        }
-      } catch (error) {
-        console.error("Error updating template ID:", error);
-        // Revert on error? For now, we just log it.
+    try {
+      // 1. Sync to Supabase
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        await supabase.from("profiles").update({
+          template_id: sanitizedId
+        }).eq('id', authUser.id);
       }
+    } catch (error) {
+      console.error("Error updating template ID:", error);
     }
   };
 
   useEffect(() => {
-    if (!loading || user) {
+    if (!loading && user) {
       handleUserData();
     }
   }, [user, loading]);

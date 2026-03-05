@@ -1,9 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+import path from 'path'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@pages': path.resolve(__dirname, './src/Pages'),
+      '@features': path.resolve(__dirname, './src/features'),
+      '@templates': path.resolve(__dirname, './src/features/portfolio/templates'),
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@hoc': path.resolve(__dirname, './src/hoc'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@styles': path.resolve(__dirname, './src/styles.js'),
+      '@constants': path.resolve(__dirname, './src/constants'),
+    },
+  },
   build: {
     rollupOptions: {
       output: {
@@ -14,7 +31,7 @@ export default defineConfig({
           'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
           'ui-vendor': ['framer-motion', 'react-icons'],
           'form-vendor': ['react-hook-form'],
-          
+
           // Feature chunks
           'auth': [
             './src/Pages/Login/Login.jsx',
@@ -34,12 +51,12 @@ export default defineConfig({
             './src/Pages/Portfolio-Preview/Preview.jsx'
           ],
           'components': [
-            './src/components/Hero.jsx',
-            './src/components/About.jsx',
-            './src/components/Experience.jsx',
-            './src/components/Tech.jsx',
-            './src/components/Works.jsx',
-            './src/components/Contact.jsx'
+            './src/components/portfolio/Hero.jsx',
+            './src/components/portfolio/About.jsx',
+            './src/components/portfolio/Experience.jsx',
+            './src/components/portfolio/Tech.jsx',
+            './src/components/portfolio/Works.jsx',
+            './src/components/portfolio/Contact.jsx'
           ]
         }
       }
