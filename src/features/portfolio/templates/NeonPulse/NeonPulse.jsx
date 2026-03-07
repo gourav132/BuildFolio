@@ -46,10 +46,13 @@ const NeonPulse = () => {
     const {
         full_name = 'Your Name',
         tagline = 'Digital Architect & Code Artist',
-        email = '',
+        display_email,
+        email: authEmail,
         github_url = '',
         linkedin_url = '',
     } = profile || {};
+
+    const email = display_email || authEmail || '';
 
     const sections = ['about', 'skills', 'experience', 'projects'];
 

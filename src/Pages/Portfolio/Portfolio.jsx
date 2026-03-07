@@ -10,7 +10,14 @@ import {
   Storyteller,
   TerminalHacker,
   NeonPulse,
-  PaperFolio
+  PaperFolio,
+  GlassmorphismStudio,
+  MonochromeInk,
+  OrganicScroll,
+  Blueprint,
+  Spotlight,
+  MobileCardStack,
+  MuseumGallery
 } from "@/features/portfolio/templates";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 
@@ -40,6 +47,20 @@ export default function Portfolio() {
         return <NeonPulse />;
       case 'paper-folio':
         return <PaperFolio />;
+      case 'glassmorphism-studio':
+        return <GlassmorphismStudio />;
+      case 'monochrome-ink':
+        return <MonochromeInk />;
+      case 'organic-scroll':
+        return <OrganicScroll />;
+      case 'blueprint':
+        return <Blueprint />;
+      case 'spotlight':
+        return <Spotlight />;
+      case 'mobile-card-stack':
+        return <MobileCardStack />;
+      case 'museum-gallery':
+        return <MuseumGallery />;
       case 'modern-dark':
       default:
         return <ModernDark />;

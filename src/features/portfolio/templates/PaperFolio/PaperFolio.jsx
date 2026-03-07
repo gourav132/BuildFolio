@@ -27,10 +27,14 @@ const PaperFolio = () => {
     const {
         full_name = 'Your Name',
         tagline = 'Designer & Developer',
-        email = '',
+        display_email,
+        email: authEmail,
+        location,
         github_url = '',
         linkedin_url = '',
     } = profile || {};
+
+    const email = display_email || authEmail || '';
 
     const fadeUp = {
         hidden: { opacity: 0, y: 24 },

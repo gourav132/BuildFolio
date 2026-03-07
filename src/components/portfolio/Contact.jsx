@@ -79,19 +79,19 @@ const Contact = () => {
     {
       icon: FiMail,
       title: "Email",
-      value: profile?.email || "your@email.com",
-      link: `mailto:${profile?.email || "#"}`,
+      value: profile?.display_email || profile?.email || "your@email.com",
+      link: `mailto:${profile?.display_email || profile?.email || "#"}`,
     },
     {
       icon: FiPhone,
       title: "Phone",
-      value: profile?.phone || "+1 (555) 123-4567",
-      link: profile?.phone ? `tel:${profile.phone.replace(/\D/g, '')}` : "#",
+      value: profile?.phone_no || "+1 (555) 123-4567",
+      link: profile?.phone_no ? `tel:${profile.phone_no.replace(/\D/g, '')}` : "#",
     },
     {
       icon: FiMapPin,
       title: "Location",
-      value: profile?.address || "City, Country",
+      value: profile?.location || "City, Country",
       link: "#",
     },
   ];

@@ -17,8 +17,11 @@ const MinimalLight = () => {
     const {
         full_name: displayName = "Your Name",
         tagline = "Creative Developer & Designer",
-        email = "",
+        display_email,
+        email: authEmail,
     } = profile || {};
+
+    const email = display_email || authEmail || "";
 
     const github_url = socialLinks.github || '';
     const linkedin_url = socialLinks.linkedin || '';

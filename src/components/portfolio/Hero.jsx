@@ -12,7 +12,7 @@ const Hero = () => {
     { icon: FiGithub, href: profile?.github_url || "#", label: "GitHub" },
     { icon: FiLinkedin, href: profile?.linkedin_url || "#", label: "LinkedIn" },
     { icon: FiTwitter, href: profile?.twitter_url || "#", label: "Twitter" },
-    { icon: FiMail, href: `mailto:${profile?.email || "#"}`, label: "Email" },
+    { icon: FiMail, href: `mailto:${profile?.display_email || profile?.email || "#"}`, label: "Email" },
   ].filter(link => link.href !== "#" && link.href !== "mailto:#");
 
   if (loading) {

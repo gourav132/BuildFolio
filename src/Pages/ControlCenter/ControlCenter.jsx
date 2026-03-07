@@ -120,6 +120,55 @@ const ControlCenter = () => {
       description: 'Warm editorial print style',
       status: 'active',
       icon: FiFileText
+    },
+    {
+      id: 'glassmorphism-studio',
+      name: 'Glassmorphism Studio',
+      description: 'Frosted glass UI elements',
+      status: 'active',
+      icon: FiGrid
+    },
+    {
+      id: 'monochrome-ink',
+      name: 'Monochrome Ink',
+      description: 'Editorial B&W newspaper style',
+      status: 'active',
+      icon: FiFileText
+    },
+    {
+      id: 'organic-scroll',
+      name: 'Organic Scroll',
+      description: 'Earthy tones and soft curves',
+      status: 'active',
+      icon: FiLayers
+    },
+    {
+      id: 'blueprint',
+      name: 'Blueprint',
+      description: 'Technical specs & grid lines',
+      status: 'active',
+      icon: FiCode
+    },
+    {
+      id: 'spotlight',
+      name: 'Spotlight',
+      description: 'Dramatic award-reveal stage',
+      status: 'active',
+      icon: FiActivity
+    },
+    {
+      id: 'mobile-card-stack',
+      name: 'Mobile Card Stack',
+      description: 'Swipeable card interface',
+      status: 'active',
+      icon: FiGrid
+    },
+    {
+      id: 'museum-gallery',
+      name: 'Museum Gallery',
+      description: 'Clean artwork exhibition style',
+      status: 'active',
+      icon: FiGrid
     }
   ];
 
@@ -156,7 +205,7 @@ const ControlCenter = () => {
   };
 
   return (
-    <div className="min-h-screen w-8/12 m-auto bg-black text-white overflow-hidden">
+    <div className="min-h-screen bg-black text-white overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]"></div>
@@ -165,15 +214,15 @@ const ControlCenter = () => {
 
 
       {/* Header */}
-      <header className="relative z-10 px-4 py-4 border-b border-gray-800/50">
+      <header className="relative z-10 px-4 py-3 sm:py-4 border-b border-gray-800/50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <Link
-              to="/portfolio"
+            <p
+              // to="/portfolio"
               className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-300 text-sm"
             >
               <span>BuildFolio</span>
-            </Link>
+            </p>
             <div className="w-px h-6 bg-gray-700"></div>
           </div>
           <div className="flex items-center space-x-3">
@@ -207,7 +256,7 @@ const ControlCenter = () => {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Portfolio Designs Section */}
         <motion.div
           initial={{ opacity: 0, y: 0 }}
@@ -220,7 +269,7 @@ const ControlCenter = () => {
             <p className="text-gray-400 text-sm">Choose your preferred design template</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {portfolioDesigns.map((design) => {
               const isApplied = appliedTemplate === design.id;
               const isSelected = selectedDesign === design.id;
@@ -285,7 +334,7 @@ const ControlCenter = () => {
             <p className="text-gray-400 text-sm">Edit and organize your portfolio content</p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {contentSections.map((section, index) => (
               <motion.div
                 key={section.title}
@@ -320,7 +369,7 @@ const ControlCenter = () => {
             <p className="text-gray-400 text-sm">Common tasks and shortcuts</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {quickActions.map((action, index) => (
               <motion.button
                 key={action.title}

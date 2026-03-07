@@ -65,11 +65,15 @@ const BentoBox = () => {
     const {
         full_name: displayName = "Your Identity",
         tagline = "Crafting premium digital products with design precision.",
-        email = "",
+        display_email,
+        email: authEmail,
+        location,
         github_url = "",
         linkedin_url = "",
         profile_image = ""
     } = profile || {};
+
+    const email = display_email || authEmail || "";
 
     const overview = synopsis?.intro;
     const services = synopsis?.services || [];
@@ -200,7 +204,7 @@ const BentoBox = () => {
                     {/* 6. Quick CTA / Location (Small) */}
                     <BentoTile className="md:col-span-5 md:row-span-1 justify-center items-center text-center bg-zinc-950" delay={0.5}>
                         <FiMapPin className="text-indigo-500 mb-4" size={32} />
-                        <h4 className="text-xl font-bold text-white">Global Remote</h4>
+                        <h4 className="text-xl font-bold text-white">{location || "Global Remote"}</h4>
                         <p className="text-zinc-500 text-sm mt-2 font-medium">Available for specialized freelance projects and full-time inquiries worldwide.</p>
                         <button className="mt-8 px-8 py-3 bg-zinc-800 rounded-2xl text-sm font-bold border border-white/5 hover:bg-zinc-700 transition-all">
                             Check Availability

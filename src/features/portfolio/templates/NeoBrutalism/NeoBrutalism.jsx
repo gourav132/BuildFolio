@@ -17,8 +17,11 @@ const NeoBrutalism = () => {
     const {
         full_name: displayName = "USER CORE",
         tagline = "Engineered for the digital avant-garde. Building high-performance visual systems.",
-        email = "",
+        display_email,
+        email: authEmail,
     } = profile || {};
+
+    const email = display_email || authEmail || "";
 
     const github_url = socialLinks.github || '';
     const linkedin_url = socialLinks.linkedin || '';
@@ -46,22 +49,22 @@ const NeoBrutalism = () => {
                 </a>
             </nav>
 
-            <main className="relative z-10 max-w-screen-2xl mx-auto px-6 py-12 md:py-24 space-y-32">
+            <main className="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8 md:py-24 space-y-16 md:space-y-32">
 
                 {/* Hero Section - The "Streetwear" Identity */}
                 <section className="relative">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border-[3px] border-white overflow-hidden shadow-[20px_20px_0px_#a1ff00]">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border-[3px] border-white overflow-hidden shadow-[8px_8px_0px_#a1ff00] md:shadow-[20px_20px_0px_#a1ff00]">
                         <div className="lg:col-span-8 p-8 md:p-16 bg-white text-black">
                             <div className="mb-12 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-50">
                                 <FiActivity className="text-red-600 animate-pulse" /> SYSTEM_ACTIVE // STATUS_STABLE
                             </div>
-                            <h1 className="text-7xl md:text-[140px] font-black uppercase leading-[0.85] tracking-tighter mb-12 italic">
+                            <h1 className="text-5xl sm:text-7xl md:text-[100px] lg:text-[140px] font-black uppercase leading-[0.85] tracking-tighter mb-8 md:mb-12 italic">
                                 {displayName?.split(' ')[0] || 'USER'}<br />
                                 <span className="underline decoration-[15px] decoration-[#a1ff00] underline-offset-[-10px]">
                                     {displayName?.split(' ')[1] || 'CORE'}
                                 </span>
                             </h1>
-                            <p className="text-xl md:text-2xl font-black uppercase max-w-xl leading-snug border-l-[12px] border-black pl-6 mb-12">
+                            <p className="text-base sm:text-xl md:text-2xl font-black uppercase max-w-xl leading-snug border-l-[8px] md:border-l-[12px] border-black pl-4 md:pl-6 mb-8 md:mb-12">
                                 {tagline}
                             </p>
                             <div className="flex flex-wrap gap-4">
@@ -69,10 +72,10 @@ const NeoBrutalism = () => {
                                 <SocialButton href={linkedin_url} icon={<FiLinkedin />} label="LINKEDIN" />
                             </div>
                         </div>
-                        <div className="lg:col-span-4 bg-[#a1ff00] text-black p-12 flex flex-col justify-between border-l-[3px] border-black">
+                        <div className="lg:col-span-4 bg-[#a1ff00] text-black p-6 sm:p-10 md:p-12 flex flex-col justify-between border-t-[3px] lg:border-t-0 lg:border-l-[3px] border-black">
                             <div>
-                                <h2 className="text-4xl font-black uppercase mb-8 border-b-[4px] border-black pb-4">CORE_INTEL</h2>
-                                <p className="text-xl font-bold leading-relaxed italic">
+                                <h2 className="text-2xl sm:text-4xl font-black uppercase mb-4 sm:mb-8 border-b-[4px] border-black pb-4">CORE_INTEL</h2>
+                                <p className="text-base sm:text-xl font-bold leading-relaxed italic">
                                     "{overview || 'Technical precision meets aesthetic brutality. Minimalist framework, maximum impact. No compromises.'}"
                                 </p>
                             </div>
@@ -87,11 +90,11 @@ const NeoBrutalism = () => {
                 {skills.length > 0 && (
                     <section>
                         <div className="flex items-center gap-4 mb-12">
-                            <h2 className="text-5xl font-black uppercase tracking-tighter italic">THE_ARSENAL</h2>
-                            <div className="flex-1 h-[2px] bg-white/20"></div>
-                            <span className="text-[10px] font-bold opacity-50 uppercase">TECH_STACK // PROTOCOL_01</span>
+                            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter italic">THE_ARSENAL</h2>
+                            <div className="flex-1 h-[2px] bg-white/20 hidden sm:block"></div>
+                            <span className="hidden sm:block text-[10px] font-bold opacity-50 uppercase">TECH_STACK // PROTOCOL_01</span>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-0 border-[2px] border-white/20">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-0 border-[2px] border-white/20">
                             {skills.map((skill, i) => (
                                 <motion.div
                                     key={skill.id}
@@ -109,9 +112,9 @@ const NeoBrutalism = () => {
                 {/* Projects Section - Visual Records */}
                 <section id="works">
                     <div className="flex items-center gap-4 mb-16">
-                        <h2 className="text-5xl font-black uppercase tracking-tighter italic">VISUAL_RECORDS</h2>
-                        <div className="flex-1 h-[2px] bg-white/20"></div>
-                        <span className="text-[10px] font-bold opacity-50 uppercase">COLLECTION_24</span>
+                        <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter italic">VISUAL_RECORDS</h2>
+                        <div className="flex-1 h-[2px] bg-white/20 hidden sm:block"></div>
+                        <span className="hidden sm:block text-[10px] font-bold opacity-50 uppercase">COLLECTION_24</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                         {projects.map((project, i) => (
@@ -165,26 +168,26 @@ const NeoBrutalism = () => {
                 {/* Combat Records - Experience */}
                 {experiences.length > 0 && (
                     <section id="combat">
-                        <div className="flex items-center gap-4 mb-16">
-                            <h2 className="text-5xl font-black uppercase tracking-tighter italic">COMBAT_RECORDS</h2>
-                            <div className="flex-1 h-[2px] bg-white/20"></div>
-                            <span className="text-[10px] font-bold opacity-50 uppercase">CAREER_TRAJECTORY</span>
+                        <div className="flex items-center gap-4 mb-12 md:mb-16">
+                            <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter italic">COMBAT_RECORDS</h2>
+                            <div className="flex-1 h-[2px] bg-white/20 hidden sm:block"></div>
+                            <span className="hidden sm:block text-[10px] font-bold opacity-50 uppercase">CAREER_TRAJECTORY</span>
                         </div>
                         <div className="space-y-0 border-l-[3px] border-white/20 ml-4 md:ml-0">
                             {experiences.map((exp, i) => (
-                                <div key={exp.id} className="relative pl-12 pb-24 group">
+                                <div key={exp.id} className="relative pl-12 pb-16 md:pb-24 group">
                                     <div className="absolute left-[-11px] top-0 w-5 h-5 bg-[#050505] border-[3px] border-[#a1ff00] rotate-45 group-hover:scale-150 transition-transform"></div>
                                     <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
                                         <span className="text-[#a1ff00] font-black text-sm tracking-[0.3em] font-mono leading-none">
                                             [{new Date(exp.start_date).getFullYear()} - {exp.is_current ? 'PRES' : new Date(exp.end_date).getFullYear()}]
                                         </span>
-                                        <h3 className="text-4xl font-black uppercase italic leading-none">{exp.role}</h3>
+                                        <h3 className="text-2xl sm:text-4xl font-black uppercase italic leading-none">{exp.role}</h3>
                                     </div>
                                     <div className="inline-block bg-white text-black px-4 py-1 font-black uppercase text-xs mb-8">@{exp.company_name}</div>
                                     <ul className="space-y-4 max-w-4xl text-white/50 group-hover:text-white/90 transition-colors">
                                         {exp.description_points?.map((p, j) => (
-                                            <li key={j} className="flex gap-4 font-bold text-lg leading-snug">
-                                                <span className="text-[#a1ff00]">//</span>
+                                            <li key={j} className="flex gap-3 font-bold text-base sm:text-lg leading-snug">
+                                                <span className="text-[#a1ff00] shrink-0">//</span>
                                                 {p}
                                             </li>
                                         ))}
@@ -197,14 +200,14 @@ const NeoBrutalism = () => {
             </main>
 
             {/* Footer - The Termination */}
-            <footer className="mt-32 border-t-[3px] border-white p-12 bg-white text-black text-center">
-                <h2 className="text-[150px] font-black uppercase leading-none tracking-tighter italic opacity-10 mb-[-50px]">TERMINATE</h2>
+            <footer className="mt-16 sm:mt-32 border-t-[3px] border-white p-6 sm:p-12 bg-white text-black text-center">
+                <h2 className="hidden sm:block text-[80px] md:text-[150px] font-black uppercase leading-none tracking-tighter italic opacity-10 mb-[-50px]">TERMINATE</h2>
                 <div className="relative z-10 flex flex-col items-center gap-8">
-                    <p className="text-3xl font-black uppercase max-w-xl">READY TO COLLABORATE <br />ON THE NEXT GENERATION?</p>
-                    <a href={`mailto:${email}`} className="text-3xl font-black border-b-[8px] border-black pb-2 hover:bg-[#a1ff00] transition-colors p-4">
+                    <p className="text-xl sm:text-3xl font-black uppercase max-w-xl">READY TO COLLABORATE <br />ON THE NEXT GENERATION?</p>
+                    <a href={`mailto:${email}`} className="text-xl sm:text-3xl font-black border-b-[8px] border-black pb-2 hover:bg-[#a1ff00] transition-colors p-2 sm:p-4 break-all">
                         {email || 'CONTACT@CORE.SYSTEM'}
                     </a>
-                    <div className="flex gap-12 mt-12 text-[10px] font-black uppercase tracking-widest">
+                    <div className="flex flex-wrap justify-center gap-6 sm:gap-12 mt-8 sm:mt-12 text-[10px] font-black uppercase tracking-widest">
                         <span>DESIGNED_BY_AGENT</span>
                         <span>BUILD_FOLIO // V.24</span>
                         <span>NO_COPYRIGHT</span>

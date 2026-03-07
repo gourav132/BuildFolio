@@ -78,7 +78,9 @@ const TerminalHacker = () => {
             profile?.github_url ? `GITHUB: ${profile.github_url}` : null,
             profile?.linkedin_url ? `LINKEDIN: ${profile.linkedin_url}` : null,
             profile?.twitter_url ? `TWITTER: ${profile.twitter_url}` : null,
-            profile?.email ? `EMAIL: ${profile.email}` : null,
+            (profile?.display_email || profile?.email) ? `EMAIL: ${profile.display_email || profile.email}` : null,
+            profile?.phone_no ? `PHONE: ${profile.phone_no}` : null,
+            profile?.location ? `LOCATION: ${profile.location}` : null,
             '-------------------------'
         ].filter(Boolean),
         experience: () => [
@@ -92,7 +94,7 @@ const TerminalHacker = () => {
         contact: () => [
             'INITIALIZING CONTACT_UI...',
             `ENCRYPTION_KEY: SHA-256`,
-            `RECIPIENT: ${profile?.email || 'N/A'}`,
+            `RECIPIENT: ${profile?.display_email || profile?.email || 'N/A'}`,
             'TYPE "cat social.txt" FOR MANIFEST.'
         ],
         clear: () => {

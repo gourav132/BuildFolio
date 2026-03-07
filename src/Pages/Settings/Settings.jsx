@@ -21,7 +21,7 @@ export default function Settings() {
 
   // Contact Information
   const [contactInfo, setContactInfo] = useState({
-    email: "", phone: "", location: "", website: ""
+    email: "", phone: "", location: ""
   });
 
   // Social Media Links
@@ -56,6 +56,20 @@ export default function Settings() {
     try {
       if (!user) return;
 
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_email, phone_no, location')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        setContactInfo({
+          email: profile.display_email || "",
+          phone: profile.phone_no || "",
+          location: profile.location || ""
+        });
+      }
+
       const { data: rows } = await supabase
         .from('social_links')
         .select('platform, url')
@@ -75,6 +89,18 @@ export default function Settings() {
     setIsSaving(true);
     try {
       if (!user) throw new Error('Not authenticated');
+
+      // Update profile contact info
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          display_email: contactInfo.email,
+          phone_no: contactInfo.phone,
+          location: contactInfo.location
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
 
       // Upsert each social link platform (insert or update on conflict)
       const platforms = Object.keys(socialLinks);
@@ -301,7 +327,6 @@ export default function Settings() {
                     { label: 'Email', key: 'email', icon: FiMail, type: 'email', placeholder: 'you@example.com' },
                     { label: 'Phone', key: 'phone', icon: FiPhone, type: 'tel', placeholder: '+1 234 567 8900' },
                     { label: 'Location', key: 'location', icon: FiMapPin, type: 'text', placeholder: 'City, Country' },
-                    { label: 'Website', key: 'website', icon: FiGlobe, type: 'url', placeholder: 'https://yoursite.com' },
                   ].map(({ label, key, icon: Icon, type, placeholder }) => (
                     <div key={key}>
                       <label className={labelClass}>{label}</label>
