@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useParams } from 'react-router-dom';
 
 const TerminalHacker = () => {
-    const { profile, synopsis, skills, experiences, projects, loading, error } = usePortfolioData();
+
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, loading, error } = usePortfolioData(userId);
     const [history, setHistory] = useState([
         { type: 'system', content: 'INITIALIZING SYSTEM V4.0.2...' },
         { type: 'system', content: 'ESTABLISHING SECURE CONNECTION TO SUPABASE_CORE...' },

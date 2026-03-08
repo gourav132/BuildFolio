@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiMail, FiArrowRight, FiBriefcase, FiUser, FiCode, FiX, FiLink } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const MobileCardStack = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
     const [activeCard, setActiveCard] = useState(null);
 
     // Stop body scroll when a card is expanded to prevent dual scrolling on mobile

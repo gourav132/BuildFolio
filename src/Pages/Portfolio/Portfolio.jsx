@@ -19,11 +19,13 @@ import {
   MobileCardStack,
   MuseumGallery
 } from "@/features/portfolio/templates";
-import { usePortfolioData } from "@/hooks/usePortfolioData";
+// import { usePortfolioData } from "@/hooks/usePortfolioData";
+import { usePublicView } from "@/hooks/usePublicView";
+
 
 export default function Portfolio() {
-  const { profile, loading, error } = usePortfolioData();
   const { userId } = useParams();
+  const { profile, loading, error } = usePublicView(userId);
 
   // Decide which template to render
   const renderTemplate = () => {

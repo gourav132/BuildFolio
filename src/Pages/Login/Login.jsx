@@ -165,7 +165,6 @@ function Login() {
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-white/5"></div>
         </div>
-        <span className="relative z-10 mx-auto px-3 bg-[#0a0a0b] text-[10px] text-gray-600 font-bold uppercase tracking-widest">or</span>
       </div>
 
       <button

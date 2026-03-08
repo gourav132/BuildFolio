@@ -5,9 +5,11 @@ import {
     FiGithub, FiLinkedin, FiMail, FiExternalLink,
     FiArrowUpRight, FiMapPin, FiCalendar
 } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const PaperFolio = () => {
-    const { profile, synopsis, skills, experiences, projects, loading } = usePortfolioData();
+    const {userId} = useParams();
+    const { profile, synopsis, skills, experiences, projects, loading } = usePortfolioData(userId);
     const [hoveredProject, setHoveredProject] = useState(null);
 
     if (loading) {

@@ -2,9 +2,11 @@ import React from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiMail, FiTwitter, FiArrowUpRight, FiMapPin, FiGlobe } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';   
 
 const MonochromeInk = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
 
     if (loading) {
         return (

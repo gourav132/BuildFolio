@@ -6,6 +6,7 @@ import {
     FiInstagram, FiTwitter, FiExternalLink, FiMapPin,
     FiCalendar, FiFolder
 } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 /* ─── animation variants ────────────────────────────────── */
 const fadeUp = {
@@ -55,7 +56,8 @@ const SectionLabel = ({ number, title }) => (
 
 /* ─── main component ────────────────────────────────────── */
 const Storyteller = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
     const [activeImg, setActiveImg] = useState(null);
 
     if (loading) {

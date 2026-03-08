@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../Supabase/supabaseClient";
 
-export const usePortfolioData = (userID) => {
+export const usePublicView = (userID) => {
+
     const [data, setData] = useState({
         profile: null,
         synopsis: null,
@@ -14,36 +15,14 @@ export const usePortfolioData = (userID) => {
     });
 
     useEffect(() => {
+
         const fetchAllData = async () => {
             try {
-                let currentUser = null;
-                // If no userID is provided, try to get the current authenticated user
-                if(!userID) {
-                    const { data, error } = await supabase.auth.getUser();
-                    currentUser = data.user.id;   
-
-                    if (error) {
-                        console.error("Error fetching user:", error);
-                        setData(prev => ({ ...prev, loading: false, error }));
-                        return;
-                    }
-                    
-                    if (!currentUser) {
-                        setData(prev => ({ ...prev, loading: false, error: "User not authenticated" }));
-                        return;
-                    }
-                } else {
-                    currentUser = userID;
-                }
-
-
-
-
                 // Fetch profile
                 const { data: profile, error: profileError } = await supabase
                     .from("profiles")
                     .select("*")
-                    .eq("id", currentUser)
+                    .eq("id", userID)
                     .maybeSingle();
 
                 // Fetch synopsis

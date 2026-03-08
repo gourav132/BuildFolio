@@ -2,9 +2,11 @@ import React from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { FiArrowRight, FiGithub, FiLinkedin, FiTwitter, FiMail, FiExternalLink, FiCommand, FiCode, FiLayers, FiTerminal, FiBriefcase } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const CreativeGradient = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
     const { scrollYProgress } = useScroll();
 
     // Parallax logic for floating elements

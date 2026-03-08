@@ -2,9 +2,11 @@ import React from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiMail, FiTerminal, FiDatabase, FiLayout, FiCpu, FiGlobe, FiCode } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const Blueprint = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
 
     if (loading) {
         return (

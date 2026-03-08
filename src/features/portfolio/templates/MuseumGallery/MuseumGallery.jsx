@@ -2,9 +2,11 @@ import React from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiMail, FiArrowUpRight, FiMaximize2, FiImage, FiCompass } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const MuseumGallery = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
     const { scrollYProgress } = useScroll();
     const yHero = useTransform(scrollYProgress, [0, 1], [0, 400]);
 

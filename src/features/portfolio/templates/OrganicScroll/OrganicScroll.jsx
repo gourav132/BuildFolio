@@ -2,9 +2,11 @@ import React from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiMail, FiArrowRight, FiFeather, FiMapPin, FiGlobe } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const OrganicScroll = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
     const { scrollYProgress } = useScroll();
     const yHero = useTransform(scrollYProgress, [0, 1], [0, 300]);
     const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);

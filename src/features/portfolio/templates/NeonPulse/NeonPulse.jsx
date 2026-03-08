@@ -5,9 +5,11 @@ import {
     FiGithub, FiLinkedin, FiMail, FiExternalLink, FiArrowRight,
     FiCode, FiZap, FiFolder, FiCpu, FiTerminal, FiActivity, FiBriefcase
 } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const NeonPulse = () => {
-    const { profile, synopsis, skills, experiences, projects, loading } = usePortfolioData();
+    const {userId} = useParams();
+    const { profile, synopsis, skills, experiences, projects, loading } = usePortfolioData(userId);
     const [activeSection, setActiveSection] = useState('about');
     const [glitchActive, setGlitchActive] = useState(false);
 

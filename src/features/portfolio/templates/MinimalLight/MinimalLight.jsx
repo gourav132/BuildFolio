@@ -2,9 +2,11 @@ import React from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { FiGithub, FiLinkedin, FiMail, FiExternalLink, FiArrowRight, FiDownload, FiFolder } from 'react-icons/fi';
 import { motion } from 'framer-motion';
+import { useParams } from 'react-router-dom';
 
 const MinimalLight = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading, error } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
 
     if (loading) {
         return (

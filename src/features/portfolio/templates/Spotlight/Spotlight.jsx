@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiMail, FiArrowRight, FiArrowDown } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const Spotlight = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
     useEffect(() => {

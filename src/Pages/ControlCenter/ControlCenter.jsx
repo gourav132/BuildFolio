@@ -58,13 +58,13 @@ const ControlCenter = () => {
   // };
 
   const portfolioDesigns = [
-    {
-      id: 'modern-dark',
-      name: 'Modern Dark',
-      description: 'Professional dark theme',
-      status: 'active',
-      icon: FiMonitor
-    },
+    // {
+    //   id: 'modern-dark',
+    //   name: 'Modern Dark',
+    //   description: 'Professional dark theme',
+    //   status: 'active',
+    //   icon: FiMonitor
+    // },
     {
       id: 'minimal-light',
       name: 'Minimal Light',

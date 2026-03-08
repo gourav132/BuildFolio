@@ -2,9 +2,11 @@ import React from 'react';
 import { usePortfolioData } from '../../../../hooks/usePortfolioData';
 import { motion } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiMail, FiExternalLink, FiArrowRight, FiActivity, FiLayers, FiTerminal, FiFolder } from 'react-icons/fi';
+import { useParams } from 'react-router-dom';
 
 const NeoBrutalism = () => {
-    const { profile, synopsis, skills, experiences, projects, socialLinks, loading, error } = usePortfolioData();
+    const { userId } = useParams();
+    const { profile, synopsis, skills, experiences, projects, socialLinks, loading, error } = usePortfolioData(userId);
 
     if (loading) {
         return (
