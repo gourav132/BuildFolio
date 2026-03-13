@@ -8,6 +8,7 @@ const Blueprint = () => {
     const { userId } = useParams();
     const { profile, synopsis, skills, experiences, projects, socialLinks, loading } = usePortfolioData(userId);
 
+
     if (loading) {
         return (
             <div className="min-h-screen bg-[#001D3D] flex items-center justify-center">
